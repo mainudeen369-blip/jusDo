@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# jusDo
 
-## Getting Started
+Walk-and-remind doodle companion starring **Thalapathy Vijay** or **Thala Ajith**, plus a **Vijay Fans Club vs Ajith Fans Club** movie quiz.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router) + TypeScript + Tailwind
+- Vercel-ready (`/api/questions`, `/api/admin/login`)
+- Settings & rivalry stats in `localStorage`
+- Question bank in `data/questions.json` (editable via Admin)
+
+## Features
+
+- Walking doodle companion with moods
+- Water / stretch / alarm reminders + quiet hours
+- Daily challenge card + rivalry meter
+- Fan quiz with streaks, fun facts, shareable score card
+- Admin: form entry **or** JSON import (merge / replace)
+
+## Local
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Admin: [/admin](http://localhost:3000/admin) — password `jusdo-admin` (or `ADMIN_PASSWORD`).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy (Vercel)
 
-## Learn More
+1. Import this repo in Vercel
+2. Set env `ADMIN_PASSWORD`
+3. Deploy
 
-To learn more about Next.js, take a look at the following resources:
+Note: Admin writes update `data/questions.json` on the server filesystem. On Vercel serverless that file is ephemeral — keep your bank in git (commit `data/questions.json`) or move to a DB later. Seed questions always ship with the app.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## JSON question shape
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```json
+[
+  {
+    "id": "custom-1",
+    "star": "vijay",
+    "prompt": "Your question?",
+    "options": [
+      { "id": "a", "text": "A" },
+      { "id": "b", "text": "B" },
+      { "id": "c", "text": "C" },
+      { "id": "d", "text": "D" }
+    ],
+    "correctOptionId": "a",
+    "funFact": "Optional"
+  }
+]
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`star` can be `vijay`, `ajith`, or `both`.
