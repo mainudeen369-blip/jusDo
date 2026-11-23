@@ -78,15 +78,15 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "a2",
     star: "ajith",
-    prompt: "Which Ajith film is a stylish heist thriller directed by Lokesh Kanagaraj?",
+    prompt: "Who directed Ajith's family drama Viswasam (2019)?",
     options: [
-      { id: "a", text: "Vedalam" },
-      { id: "b", text: "Yennai Arindhaal" },
-      { id: "c", text: "Kaithi" },
-      { id: "d", text: "Vikram" },
+      { id: "a", text: "Siva" },
+      { id: "b", text: "Venkat Prabhu" },
+      { id: "c", text: "H. Vinoth" },
+      { id: "d", text: "Vishnuvardhan" },
     ],
-    correctOptionId: "d",
-    funFact: "Vikram (2022) became one of Ajith's biggest worldwide hits.",
+    correctOptionId: "a",
+    funFact: "Siva also directed Ajith in Veeram, Vedalam, and Vivegam.",
   },
   {
     id: "a3",

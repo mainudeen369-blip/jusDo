@@ -148,27 +148,27 @@
   {
     "id": "a2",
     "star": "ajith",
-    "prompt": "Which Ajith film is a stylish heist thriller directed by Lokesh Kanagaraj?",
+    "prompt": "Who directed Ajith's family drama Viswasam (2019)?",
     "options": [
       {
         "id": "a",
-        "text": "Vedalam"
+        "text": "Siva"
       },
       {
         "id": "b",
-        "text": "Yennai Arindhaal"
+        "text": "Venkat Prabhu"
       },
       {
         "id": "c",
-        "text": "Kaithi"
+        "text": "H. Vinoth"
       },
       {
         "id": "d",
-        "text": "Vikram"
+        "text": "Vishnuvardhan"
       }
     ],
-    "correctOptionId": "d",
-    "funFact": "Vikram (2022) became one of Ajith's biggest worldwide hits."
+    "correctOptionId": "a",
+    "funFact": "Siva also directed Ajith in Veeram, Vedalam, and Vivegam."
   },
   {
     "id": "a3",

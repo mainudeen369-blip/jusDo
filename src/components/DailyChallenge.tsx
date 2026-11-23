@@ -15,7 +15,7 @@ const NUDGES = [
 const TRIVIA_TEASERS = [
   "Which film turned a classroom into a war zone of charisma?",
   "Who holds the racing wheel off-screen as tightly as on-screen?",
-  "Arabic Kuthu or Vikram BGM — which drops first in your head?",
+  "Arabic Kuthu or Vedalam's Aaluma Doluma — which drops first in your head?",
   "Thala or Thalapathy — can you match titles without blinking?",
 ];
 
