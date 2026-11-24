@@ -2,6 +2,15 @@
   {
     "playerName": "Fan",
     "club": "vijay",
+    "score": 13,
+    "total": 15,
+    "streak": 6,
+    "at": "2026-11-24T14:06:30.664Z",
+    "guestId": "g-mwurn9zv-9e4tu5"
+  },
+  {
+    "playerName": "Fan",
+    "club": "vijay",
     "score": 14,
     "total": 15,
     "streak": 8,
