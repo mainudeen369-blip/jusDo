@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AlertMediaSettings } from "@/components/AlertMediaSettings";
 import { defaultSettings, loadSettings, saveSettings, starLabel } from "@/lib/settings";
 import type { JusDoSettings, ReminderConfig, ScheduleMode, StarId } from "@/lib/types";
 
@@ -46,6 +47,8 @@ export function SettingsForm() {
         await Notification.requestPermission();
       }
     }
+    // Restart reminder clocks from now (so "every 1 min" starts after Save)
+    window.dispatchEvent(new Event("jusdo:settings-saved"));
     setSaved(true);
   }
 
@@ -87,6 +90,8 @@ export function SettingsForm() {
           ))}
         </div>
       </fieldset>
+
+      <AlertMediaSettings settings={settings} onChange={update} />
 
       <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-4">
         <p className="text-sm font-medium text-teal-100">Notification style</p>
@@ -251,7 +256,36 @@ export function SettingsForm() {
       >
         Save settings
       </button>
-      {saved ? <p className="text-sm text-teal-300">Saved on this device (web & desktop).</p> : null}
+      {saved ? (
+        <div className="space-y-1 text-sm text-teal-300">
+          <p>Saved. Reminder timer restarted from now.</p>
+          <p className="text-slate-400">
+            Keep this tab open (Settings or Companion). For “every 1 min”, the first corner toast
+            should appear in about 1 minute. Use Companion → Preview water notification to test
+            immediately.
+          </p>
+        </div>
+      ) : null}
+      <button
+        type="button"
+        onClick={() => {
+          const s = loadSettings();
+          window.dispatchEvent(
+            new CustomEvent("jusdo:preview-reminder", {
+              detail: {
+                kind: "water",
+                title: `A kind reminder from ${starLabel(s.star)}`,
+                message:
+                  s.reminders.find((r) => r.id === "water")?.customMessage ||
+                  "Please drink a glass of water.",
+              },
+            }),
+          );
+        }}
+        className="rounded-lg border border-teal-300/40 bg-teal-400/10 px-4 py-2.5 text-sm text-teal-100"
+      >
+        Test water alert now
+      </button>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   deleteQuestion,
   getQuestions,
   replaceAllQuestions,
+  storageNote,
   upsertQuestion,
 } from "@/lib/questions-store";
 import type { QuizQuestion } from "@/lib/types";
@@ -14,7 +15,7 @@ function adminFrom(req: NextRequest) {
 
 export async function GET() {
   const questions = await getQuestions();
-  return NextResponse.json({ questions });
+  return NextResponse.json({ questions, storageNote: storageNote() });
 }
 
 export async function POST(req: NextRequest) {
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
               }
               return replaceAllQuestions(all);
             })();
-      return NextResponse.json({ ok: true, questions: saved });
+      return NextResponse.json({ ok: true, questions: saved, storageNote: storageNote() });
     }
 
     const question = body.question as QuizQuestion;
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid question" }, { status: 400 });
     }
     const saved = await upsertQuestion(question);
-    return NextResponse.json({ ok: true, questions: saved });
+    return NextResponse.json({ ok: true, questions: saved, storageNote: storageNote() });
   } catch (e) {
     const status = (e as { status?: number }).status || 500;
     return NextResponse.json({ error: (e as Error).message }, { status });
@@ -67,7 +68,7 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
     const questions = await deleteQuestion(id);
-    return NextResponse.json({ ok: true, questions });
+    return NextResponse.json({ ok: true, questions, storageNote: storageNote() });
   } catch (e) {
     const status = (e as { status?: number }).status || 500;
     return NextResponse.json({ error: (e as Error).message }, { status });

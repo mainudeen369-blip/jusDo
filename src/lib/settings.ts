@@ -49,6 +49,10 @@ export function defaultSettings(): JusDoSettings {
     displayName: "Fan",
     cornerNotifications: true,
     systemNotifications: true,
+    alertAnimaticMode: "builtin",
+    alertMediaId: undefined,
+    alertMediaIdVijay: undefined,
+    alertMediaIdAjith: undefined,
   };
 }
 
@@ -75,7 +79,19 @@ function migrateSettings(raw: Partial<JusDoSettings> & { reminders?: ReminderCon
     reminders,
     cornerNotifications: raw.cornerNotifications ?? true,
     systemNotifications: raw.systemNotifications ?? true,
+    alertAnimaticMode: raw.alertAnimaticMode === "upload" ? "upload" : "builtin",
+    alertMediaId: raw.alertMediaId,
+    alertMediaIdVijay: raw.alertMediaIdVijay,
+    alertMediaIdAjith: raw.alertMediaIdAjith,
   };
+}
+
+/** Resolve which uploaded clip id to use for this star (if any). */
+export function resolveAlertMediaId(settings: JusDoSettings, star: StarId): string | undefined {
+  if (settings.alertAnimaticMode !== "upload") return undefined;
+  if (star === "vijay" && settings.alertMediaIdVijay) return settings.alertMediaIdVijay;
+  if (star === "ajith" && settings.alertMediaIdAjith) return settings.alertMediaIdAjith;
+  return settings.alertMediaId;
 }
 
 export function loadSettings(): JusDoSettings {

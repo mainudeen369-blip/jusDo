@@ -1,27 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { StarAnimatic } from "@/components/StarAnimatic";
 import { StarPortrait } from "@/components/StarPortrait";
-import { CornerToast } from "@/components/CornerToast";
 import { DailyChallenge } from "@/components/DailyChallenge";
 import { RivalryMeter } from "@/components/RivalryMeter";
 import { DownloadExeButton } from "@/components/DownloadExeButton";
+import { TopFansBoard } from "@/components/TopFansBoard";
+import { loadGuest } from "@/lib/guest";
 import {
-  isQuietHour,
   loadRivalry,
   loadSettings,
   saveRivalry,
-  shouldFireReminder,
   starLabel,
 } from "@/lib/settings";
 import type { CompanionMood, JusDoSettings, RivalryStats } from "@/lib/types";
-
-type ToastState = {
-  kind: "water" | "general";
-  title: string;
-  message: string;
-} | null;
 
 export function CompanionStage() {
   const [settings, setSettings] = useState<JusDoSettings | null>(null);
@@ -29,160 +22,76 @@ export function CompanionStage() {
   const [message, setMessage] = useState<string | null>(null);
   const [mood, setMood] = useState<CompanionMood>("happy");
   const [offeringWater, setOfferingWater] = useState(false);
-  const [toast, setToast] = useState<ToastState>(null);
-  const lastFiredRef = useRef<Record<string, number>>({});
-  const seededRef = useRef(false);
+  const [guestName, setGuestName] = useState<string | null>(null);
 
   useEffect(() => {
     setSettings(loadSettings());
     setRivalry(loadRivalry());
+    setGuestName(loadGuest()?.name || null);
   }, []);
 
   useEffect(() => {
-    const onStorage = () => {
+    const refresh = () => {
       setSettings(loadSettings());
       setRivalry(loadRivalry());
+      setGuestName(loadGuest()?.name || null);
     };
-    window.addEventListener("focus", onStorage);
-    return () => window.removeEventListener("focus", onStorage);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("jusdo:settings-saved", refresh);
+    window.addEventListener("jusdo:guest-changed", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("jusdo:settings-saved", refresh);
+      window.removeEventListener("jusdo:guest-changed", refresh);
+    };
   }, []);
 
-  const activeReminders = useMemo(
-    () => settings?.reminders.filter((r) => r.enabled) ?? [],
-    [settings],
-  );
-
   useEffect(() => {
-    if (!settings || !rivalry) return;
-
-    if (!seededRef.current) {
-      const seed: Record<string, number> = {};
-      const now = Date.now();
-      for (const rem of activeReminders) {
-        const mode = rem.scheduleMode || "interval";
-        if (mode === "interval" && rem.intervalMinutes > 0) seed[rem.id] = now;
-      }
-      lastFiredRef.current = { ...lastFiredRef.current, ...seed };
-      seededRef.current = true;
-    }
-
-    const tick = () => {
-      if (isQuietHour(settings)) {
-        setMood("sleepy");
-        return;
-      }
-
-      const now = new Date();
-      const ms = now.getTime();
-
-      for (const rem of activeReminders) {
-        const { fire, key } = shouldFireReminder(rem, now, lastFiredRef.current);
-        if (!fire) continue;
-
-        const isWater = rem.kind === "water";
-        showReminder(
-          rem.customMessage || rem.label,
-          isWater ? "water" : "general",
-          isWater
-            ? `A kind reminder from ${starLabel(settings.star)}`
-            : `${starLabel(settings.star)} — reminder`,
-        );
-        lastFiredRef.current = {
-          ...lastFiredRef.current,
-          [key]: ms,
-          [rem.id]: ms,
-        };
-      }
+    const onReminder = (e: Event) => {
+      const detail = (e as CustomEvent).detail as {
+        kind: "water" | "general";
+        message: string;
+      };
+      setMessage(detail.message);
+      setMood(detail.kind === "water" ? "nudge" : "happy");
+      setOfferingWater(detail.kind === "water");
+      window.setTimeout(() => {
+        setMessage(null);
+        setOfferingWater(false);
+      }, 8000);
     };
-
-    const id = window.setInterval(tick, 10_000);
-    return () => window.clearInterval(id);
+    const onWater = () => {
+      markWater();
+      setMood("proud");
+      setMessage("Thank you. Stay healthy and keep going with grace.");
+      window.setTimeout(() => setMessage(null), 4000);
+    };
+    window.addEventListener("jusdo:reminder", onReminder);
+    window.addEventListener("jusdo:water-accepted", onWater);
+    return () => {
+      window.removeEventListener("jusdo:reminder", onReminder);
+      window.removeEventListener("jusdo:water-accepted", onWater);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, activeReminders, rivalry]);
-
-  function playChime(water: boolean) {
-    if (!settings?.soundEnabled) return;
-    try {
-      const ctx = new AudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.value = water ? 520 : 660;
-      gain.gain.value = 0.04;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.15);
-    } catch {
-      // ignore
-    }
-  }
-
-  function showReminder(text: string, kind: "water" | "general", title: string) {
-    setMessage(text);
-    setMood(kind === "water" ? "nudge" : "happy");
-    setOfferingWater(kind === "water");
-    playChime(kind === "water");
-
-    if (settings?.cornerNotifications !== false) {
-      setToast({ kind, title, message: text });
-    }
-
-    if (
-      settings?.systemNotifications !== false &&
-      typeof Notification !== "undefined" &&
-      Notification.permission === "granted"
-    ) {
-      try {
-        const n = new Notification(title, {
-          body: text,
-          silent: !settings?.soundEnabled,
-          tag: `jusdo-${kind}`,
-        });
-        n.onclick = () => {
-          window.focus();
-          n.close();
-        };
-      } catch {
-        // ignore
-      }
-    }
-
-    window.setTimeout(() => {
-      setMessage(null);
-      setOfferingWater(false);
-    }, 8000);
-  }
+  }, [rivalry]);
 
   function markWater() {
-    if (!rivalry) return;
+    const stats = loadRivalry();
     const today = new Date().toISOString().slice(0, 10);
-    const next = { ...rivalry };
-    if (next.lastWaterDate !== today) {
+    if (stats.lastWaterDate !== today) {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yKey = yesterday.toISOString().slice(0, 10);
-      next.waterStreakDays = next.lastWaterDate === yKey ? next.waterStreakDays + 1 : 1;
-      next.lastWaterDate = today;
-      saveRivalry(next);
-      setRivalry(next);
-      setMood("proud");
+      stats.waterStreakDays = stats.lastWaterDate === yKey ? stats.waterStreakDays + 1 : 1;
+      stats.lastWaterDate = today;
+      saveRivalry(stats);
+      setRivalry(stats);
     }
   }
 
-  function closeToast(acceptedWater: boolean) {
-    if (acceptedWater) markWater();
-    setToast(null);
-    setOfferingWater(false);
-    setMessage(acceptedWater ? "Thank you. Stay healthy and keep going with grace." : null);
-    if (acceptedWater) setMood("proud");
-    window.setTimeout(() => setMessage(null), 4000);
-  }
-
-  function offerWaterNow() {
-    showReminder(
-      "Please drink a glass of water. Take care of your health with the same dedication you give your day.",
-      "water",
-      `A kind reminder from ${starLabel(settings!.star)}`,
+  function preview(kind: "water" | "general", message: string, title: string) {
+    window.dispatchEvent(
+      new CustomEvent("jusdo:preview-reminder", { detail: { kind, message, title } }),
     );
   }
 
@@ -195,15 +104,19 @@ export function CompanionStage() {
     const perm = await notify.requestPermission();
     if (perm === "granted") {
       new notify("jusDo reminders ready", {
-        body: "Corner + system alerts will appear for water and scheduled reminders.",
+        body: "Keep this tab open. Alerts will appear every interval you set.",
       });
-      setMessage("Desktop alerts enabled. Thank you.");
-      window.setTimeout(() => setMessage(null), 4000);
       const s = loadSettings();
       s.systemNotifications = true;
       s.cornerNotifications = true;
-      localStorage.setItem("jusdo.settings.v2", JSON.stringify({ ...s }));
+      localStorage.setItem("jusdo.settings.v2", JSON.stringify(s));
       setSettings(s);
+      window.dispatchEvent(new Event("jusdo:settings-saved"));
+      setMessage("System alerts enabled. Keep this tab open.");
+      window.setTimeout(() => setMessage(null), 4000);
+    } else {
+      setMessage("Notification permission blocked — corner toast will still show in this tab.");
+      window.setTimeout(() => setMessage(null), 5000);
     }
   }
 
@@ -211,10 +124,19 @@ export function CompanionStage() {
     return <div className="p-8 text-slate-400">Loading companion…</div>;
   }
 
+  const water = settings.reminders.find((r) => r.id === "water");
+  const waterHint =
+    water?.enabled && (water.scheduleMode || "interval") === "interval"
+      ? `Water alert every ${water.intervalMinutes || 60} min — keep any jusDo tab open.`
+      : "Configure water alerts in Settings.";
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-6">
       <div className="flex flex-col gap-2">
-        <p className="text-sm text-teal-200/80">Welcome, {settings.displayName}</p>
+        <p className="text-sm text-teal-200/80">
+          Welcome, {guestName || settings.displayName}{" "}
+          <span className="text-slate-500">(guest)</span>
+        </p>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-white sm:text-4xl">
           Inspired by {starLabel(settings.star)}
         </h1>
@@ -223,13 +145,12 @@ export function CompanionStage() {
           <a href="/settings" className="text-teal-200 underline-offset-2 hover:underline">
             Settings
           </a>
-          . Alerts slide in at the bottom-right with a water animatic — same on web and desktop.
+          , then click <strong>Save</strong>. Alerts work on every page while this site tab stays open.
         </p>
+        <p className="text-xs text-teal-200/80">{waterHint}</p>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <DownloadExeButton />
-          <span className="text-xs text-slate-400">
-            Windows installer · first install once, then opens in seconds
-          </span>
+          <span className="text-xs text-slate-400">Optional desktop app (office may block unknown .exe)</span>
         </div>
       </div>
 
@@ -240,7 +161,6 @@ export function CompanionStage() {
           <p className="font-[family-name:var(--font-display)] text-xl text-white">
             {starLabel(settings.star)}
           </p>
-          <p className="text-xs text-slate-400">Portrait from public/portraits/{settings.star}.jpg</p>
         </div>
       </div>
 
@@ -254,23 +174,16 @@ export function CompanionStage() {
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
-          onClick={offerWaterNow}
+          onClick={() =>
+            preview(
+              "water",
+              "Please drink a glass of water. Take care of your health with the same dedication you give your day.",
+              `A kind reminder from ${starLabel(settings.star)}`,
+            )
+          }
           className="rounded-lg bg-teal-400 px-4 py-2 text-sm font-medium text-[#062018] transition hover:bg-teal-300"
         >
           Preview water notification
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            showReminder(
-              "A short stretch will refresh your mind. Please take a moment for yourself.",
-              "general",
-              `${starLabel(settings.star)} — stretch reminder`,
-            )
-          }
-          className="rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-100 hover:bg-white/10"
-        >
-          Preview stretch toast
         </button>
         <button
           type="button"
@@ -281,21 +194,12 @@ export function CompanionStage() {
         </button>
       </div>
 
+      <TopFansBoard />
+
       <div className="grid gap-4 md:grid-cols-2">
         <DailyChallenge star={settings.star} />
         <RivalryMeter stats={rivalry} />
       </div>
-
-      {toast ? (
-        <CornerToast
-          star={settings.star}
-          title={toast.title}
-          message={toast.message}
-          kind={toast.kind}
-          onAccept={() => closeToast(toast.kind === "water")}
-          onDismiss={() => closeToast(false)}
-        />
-      ) : null}
     </div>
   );
 }

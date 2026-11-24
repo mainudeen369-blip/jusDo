@@ -26,6 +26,8 @@ export interface ReminderConfig {
   lastFiredAt?: string;
 }
 
+export type AlertAnimaticMode = "builtin" | "upload";
+
 export interface JusDoSettings {
   star: StarId;
   soundEnabled: boolean;
@@ -36,6 +38,13 @@ export interface JusDoSettings {
   /** Prefer OS / Teams-style corner toasts */
   cornerNotifications: boolean;
   systemNotifications: boolean;
+  /** builtin SVG animatic vs uploaded dance/clip */
+  alertAnimaticMode: AlertAnimaticMode;
+  /** IndexedDB id of preferred uploaded clip (any star) */
+  alertMediaId?: string;
+  /** optional per-star clip overrides */
+  alertMediaIdVijay?: string;
+  alertMediaIdAjith?: string;
 }
 
 export interface QuizOption {
@@ -59,6 +68,8 @@ export interface QuizScorePayload {
   total: number;
   streak: number;
   at: string;
+  /** Guest session id for leaderboard dedupe */
+  guestId?: string;
 }
 
 export interface RivalryStats {

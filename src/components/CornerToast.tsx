@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { StarPortrait } from "@/components/StarPortrait";
-import { starLabel } from "@/lib/settings";
+import { getAlertMedia, type AlertMediaItem } from "@/lib/alert-media";
+import { loadSettings, resolveAlertMediaId, starLabel } from "@/lib/settings";
 import type { StarId } from "@/lib/types";
 
 export function CornerToast({
@@ -19,9 +21,29 @@ export function CornerToast({
   onAccept: () => void;
   onDismiss: () => void;
 }) {
+  const [clip, setClip] = useState<AlertMediaItem | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const settings = loadSettings();
+    const id = resolveAlertMediaId(settings, star);
+    if (!id || settings.alertAnimaticMode !== "upload") {
+      setClip(null);
+      return;
+    }
+    getAlertMedia(id).then((item) => {
+      if (!cancelled) setClip(item);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [star, kind]);
+
+  const showUpload = Boolean(clip);
+
   return (
     <div
-      className="corner-toast pointer-events-auto fixed bottom-4 right-4 z-[80] w-[min(100vw-1.5rem,380px)]"
+      className="corner-toast pointer-events-auto fixed bottom-4 right-4 z-[80] w-[min(100vw-1.5rem,400px)]"
       role="status"
       aria-live="polite"
     >
@@ -35,21 +57,61 @@ export function CornerToast({
           jusDo · {starLabel(star)}
         </div>
 
-        <div className="flex gap-3 p-3">
-          <div className="relative shrink-0">
-            <StarPortrait star={star} size={64} />
-            {kind === "water" ? (
-              <div className="toast-water-hand absolute -right-1 bottom-0" aria-hidden>
-                <svg width="36" height="44" viewBox="0 0 36 44">
-                  <rect x="12" y="0" width="10" height="8" rx="2" fill="#99f6e4" />
-                  <rect x="8" y="8" width="18" height="26" rx="4" fill="#5eead4" className="toast-bottle" />
-                  <rect x="13" y="12" width="8" height="14" rx="1" fill="#ccfbf1" opacity="0.7" />
-                  <circle className="toast-drop" cx="17" cy="38" r="3" fill="#67e8f9" />
-                  <circle className="toast-drop toast-drop-delay" cx="24" cy="40" r="2" fill="#67e8f9" />
-                </svg>
-              </div>
-            ) : null}
+        {showUpload ? (
+          <div className="relative max-h-52 w-full overflow-hidden bg-black">
+            {clip!.kind === "video" ? (
+              <video
+                key={clip!.id}
+                src={clip!.dataUrl}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="max-h-52 w-full object-cover"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={clip!.dataUrl}
+                alt=""
+                className="max-h-52 w-full object-cover animate-[corner-in_0.5s_ease]"
+              />
+            )}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0f1c28] via-transparent to-transparent" />
           </div>
+        ) : null}
+
+        <div className="flex gap-3 p-3">
+          {!showUpload ? (
+            <div className="relative shrink-0">
+              <StarPortrait star={star} size={64} />
+              {kind === "water" ? (
+                <div className="toast-water-hand absolute -right-1 bottom-0" aria-hidden>
+                  <svg width="36" height="44" viewBox="0 0 36 44">
+                    <rect x="12" y="0" width="10" height="8" rx="2" fill="#99f6e4" />
+                    <rect
+                      x="8"
+                      y="8"
+                      width="18"
+                      height="26"
+                      rx="4"
+                      fill="#5eead4"
+                      className="toast-bottle"
+                    />
+                    <rect x="13" y="12" width="8" height="14" rx="1" fill="#ccfbf1" opacity="0.7" />
+                    <circle className="toast-drop" cx="17" cy="38" r="3" fill="#67e8f9" />
+                    <circle
+                      className="toast-drop toast-drop-delay"
+                      cx="24"
+                      cy="40"
+                      r="2"
+                      fill="#67e8f9"
+                    />
+                  </svg>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-white">{title}</p>

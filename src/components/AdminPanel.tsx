@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DEFAULT_QUIZ_CONFIG, type QuizConfig } from "@/lib/quiz-config-shared";
 import type { QuizQuestion, StarId } from "@/lib/types";
 
 const EMPTY: QuizQuestion = {
@@ -42,16 +43,47 @@ export function AdminPanel() {
   const [replaceMode, setReplaceMode] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [quizConfig, setQuizConfig] = useState<QuizConfig>(DEFAULT_QUIZ_CONFIG);
+  const [storageNote, setStorageNote] = useState<string | null>(null);
 
   async function loadQuestions() {
     const res = await fetch("/api/questions");
     const data = await res.json();
     setQuestions(data.questions || []);
+    if (data.storageNote) setStorageNote(data.storageNote);
+  }
+
+  async function loadQuizConfig() {
+    const res = await fetch("/api/quiz-config");
+    const data = await res.json();
+    if (data.config) setQuizConfig(data.config);
+    if (data.storageNote) setStorageNote(data.storageNote);
   }
 
   useEffect(() => {
     loadQuestions().catch(() => setError("Could not load questions"));
+    loadQuizConfig().catch(() => null);
   }, []);
+
+  async function saveQuizRules() {
+    setError(null);
+    setStatus(null);
+    const res = await fetch("/api/quiz-config", {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify(quizConfig),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || "Could not save quiz rules");
+      return;
+    }
+    setQuizConfig(data.config);
+    if (data.storageNote) setStorageNote(data.storageNote);
+    setStatus(
+      `Quiz rules saved for all players: ${data.config.questionsPerRound} questions, ${data.config.secondsPerQuestion}s each. ${data.storageNote || ""}`,
+    );
+  }
 
   function headers() {
     return {
@@ -102,7 +134,7 @@ export function AdminPanel() {
     }
     setQuestions(data.questions);
     setForm(EMPTY);
-    setStatus("Question saved");
+    setStatus(`Question saved. ${data.storageNote || ""}`);
   }
 
   async function importJson() {
@@ -130,7 +162,10 @@ export function AdminPanel() {
       return;
     }
     setQuestions(data.questions);
-    setStatus(replaceMode ? "Replaced all questions from JSON" : "Merged JSON questions");
+    setStatus(
+      (replaceMode ? "Replaced all questions from JSON. " : "Merged JSON questions. ") +
+        (data.storageNote || ""),
+    );
   }
 
   async function remove(id: string) {
@@ -161,6 +196,13 @@ export function AdminPanel() {
           <code className="text-teal-200">jusdo-admin</code> (override with{" "}
           <code className="text-teal-200">ADMIN_PASSWORD</code>).
         </p>
+        <p className="mt-2 text-xs text-teal-200/90">
+          Admin saves are shared for every player (questions, quiz rules, top fans) via GitHub when
+          configured on Vercel.
+        </p>
+        {storageNote ? (
+          <p className="mt-1 text-xs text-slate-400">{storageNote}</p>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap items-end gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
@@ -185,6 +227,48 @@ export function AdminPanel() {
 
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
       {status ? <p className="text-sm text-teal-200">{status}</p> : null}
+
+      <section className={`space-y-3 ${authed ? "" : "pointer-events-none opacity-40"}`}>
+        <h2 className="text-lg text-white">Quiz rules</h2>
+        <p className="text-xs text-slate-400">
+          How many questions per round, and seconds to answer each (timeout = 0 points).
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-sm">
+            <span className="text-slate-400">Questions to attend (per round)</span>
+            <input
+              type="number"
+              min={1}
+              max={50}
+              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2"
+              value={quizConfig.questionsPerRound}
+              onChange={(e) =>
+                setQuizConfig({ ...quizConfig, questionsPerRound: Number(e.target.value) || 1 })
+              }
+            />
+          </label>
+          <label className="text-sm">
+            <span className="text-slate-400">Seconds per question</span>
+            <input
+              type="number"
+              min={1}
+              max={120}
+              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2"
+              value={quizConfig.secondsPerQuestion}
+              onChange={(e) =>
+                setQuizConfig({ ...quizConfig, secondsPerQuestion: Number(e.target.value) || 1 })
+              }
+            />
+          </label>
+        </div>
+        <button
+          type="button"
+          onClick={saveQuizRules}
+          className="rounded-lg bg-[#f4c95f] px-4 py-2 text-sm font-semibold text-[#1a1408]"
+        >
+          Save quiz rules
+        </button>
+      </section>
 
       <section className={`space-y-3 ${authed ? "" : "pointer-events-none opacity-40"}`}>
         <h2 className="text-lg text-white">Add / edit question</h2>
