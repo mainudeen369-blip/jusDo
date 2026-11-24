@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { DownloadExeButton } from "@/components/DownloadExeButton";
 
 const LINKS = [
   { href: "/", label: "Companion" },
@@ -20,7 +21,7 @@ export function AppNav() {
           <span className="font-[family-name:var(--font-display)] text-2xl tracking-tight text-[#f4c95f]">
             jusDo
           </span>
-          <span className="hidden text-xs text-teal-100/70 sm:inline">walk · remind · rival</span>
+          <span className="hidden text-xs text-teal-100/70 sm:inline">remind · respect · play</span>
         </Link>
         <nav className="flex flex-wrap items-center gap-1 text-sm">
           {LINKS.map((link) => {
@@ -39,6 +40,7 @@ export function AppNav() {
               </Link>
             );
           })}
+          <DownloadExeButton compact />
         </nav>
       </div>
     </header>

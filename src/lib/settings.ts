@@ -1,6 +1,6 @@
 import type { JusDoSettings, ReminderConfig, RivalryStats, StarId } from "./types";
 
-export const SETTINGS_KEY = "jusdo.settings.v1";
+export const SETTINGS_KEY = "jusdo.settings.v2";
 export const RIVALRY_KEY = "jusdo.rivalry.v1";
 export const SCORES_KEY = "jusdo.scores.v1";
 
@@ -11,26 +11,30 @@ export function defaultReminders(): ReminderConfig[] {
       kind: "water",
       label: "Drink water",
       enabled: true,
+      scheduleMode: "interval",
       intervalMinutes: 60,
-      customMessage: "Sip time! Your star says hydrate like a hero.",
+      customMessage:
+        "Please drink a glass of water. Take care of your health with quiet discipline.",
     },
     {
       id: "stretch",
       kind: "stretch",
       label: "Stretch break",
       enabled: true,
+      scheduleMode: "interval",
       intervalMinutes: 90,
-      customMessage: "Interval stretch — keep that walk energy going.",
+      customMessage: "Please take a short stretch. A calm pause keeps the mind clear.",
     },
     {
       id: "alarm",
       kind: "alarm",
       label: "Evening wind-down",
       enabled: false,
+      scheduleMode: "daily",
       intervalMinutes: 0,
       hour: 21,
       minute: 0,
-      customMessage: "Cut-off alarm — log off and rest, champ.",
+      customMessage: "Evening reminder — please rest well and recharge for tomorrow.",
     },
   ];
 }
@@ -43,6 +47,8 @@ export function defaultSettings(): JusDoSettings {
     quietHoursEnd: 7,
     reminders: defaultReminders(),
     displayName: "Fan",
+    cornerNotifications: true,
+    systemNotifications: true,
   };
 }
 
@@ -55,12 +61,30 @@ export function defaultRivalry(): RivalryStats {
   };
 }
 
+function migrateSettings(raw: Partial<JusDoSettings> & { reminders?: ReminderConfig[] }): JusDoSettings {
+  const base = defaultSettings();
+  const reminders = (raw.reminders?.length ? raw.reminders : base.reminders).map((r) => ({
+    ...r,
+    scheduleMode:
+      r.scheduleMode ||
+      (r.kind === "alarm" || (r.hour != null && r.intervalMinutes === 0) ? "daily" : "interval"),
+  }));
+  return {
+    ...base,
+    ...raw,
+    reminders,
+    cornerNotifications: raw.cornerNotifications ?? true,
+    systemNotifications: raw.systemNotifications ?? true,
+  };
+}
+
 export function loadSettings(): JusDoSettings {
   if (typeof window === "undefined") return defaultSettings();
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
+    const raw =
+      localStorage.getItem(SETTINGS_KEY) || localStorage.getItem("jusdo.settings.v1");
     if (!raw) return defaultSettings();
-    return { ...defaultSettings(), ...JSON.parse(raw) };
+    return migrateSettings(JSON.parse(raw));
   } catch {
     return defaultSettings();
   }
@@ -99,4 +123,47 @@ export function isQuietHour(settings: JusDoSettings, date = new Date()) {
   if (start === end) return false;
   if (start < end) return h >= start && h < end;
   return h >= start || h < end;
+}
+
+/** Returns true when this reminder should fire at `now`. */
+export function shouldFireReminder(
+  rem: ReminderConfig,
+  now: Date,
+  lastFiredKeys: Record<string, number>,
+): { fire: boolean; key: string } {
+  const mode = rem.scheduleMode || (rem.kind === "alarm" ? "daily" : "interval");
+  const ms = now.getTime();
+
+  if (mode === "interval") {
+    if (rem.intervalMinutes <= 0) return { fire: false, key: rem.id };
+    const prev = lastFiredKeys[rem.id] ?? ms;
+    return {
+      fire: ms - prev >= rem.intervalMinutes * 60_000,
+      key: rem.id,
+    };
+  }
+
+  const hour = rem.hour ?? 9;
+  const minute = rem.minute ?? 0;
+  const dateStr = rem.scheduleDate || now.toISOString().slice(0, 10);
+  const dayKey = now.toISOString().slice(0, 10);
+
+  if (mode === "once") {
+    const key = `${rem.id}-once-${dateStr}-${hour}:${minute}`;
+    if (lastFiredKeys[key]) return { fire: false, key };
+    if (dayKey !== dateStr) return { fire: false, key };
+    if (now.getHours() === hour && now.getMinutes() === minute) {
+      return { fire: true, key };
+    }
+    return { fire: false, key };
+  }
+
+  // daily
+  const key = `${rem.id}-daily-${dayKey}-${hour}:${minute}`;
+  if (lastFiredKeys[key]) return { fire: false, key };
+  if (rem.scheduleDate && dayKey < rem.scheduleDate) return { fire: false, key };
+  if (now.getHours() === hour && now.getMinutes() === minute) {
+    return { fire: true, key };
+  }
+  return { fire: false, key };
 }

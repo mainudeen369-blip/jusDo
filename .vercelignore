@@ -1,0 +1,9 @@
+dist-exe
+pack
+.next
+node_modules
+.git
+*.exe
+*.blockmap
+electron
+scripts/prepare-electron.mjs

@@ -2,14 +2,28 @@
 
 import { useEffect, useState } from "react";
 import { defaultSettings, loadSettings, saveSettings, starLabel } from "@/lib/settings";
-import type { JusDoSettings, ReminderConfig, StarId } from "@/lib/types";
+import type { JusDoSettings, ReminderConfig, ScheduleMode, StarId } from "@/lib/types";
 
 export function SettingsForm() {
   const [settings, setSettings] = useState<JusDoSettings>(defaultSettings());
   const [saved, setSaved] = useState(false);
+  const [today, setToday] = useState("");
 
   useEffect(() => {
-    setSettings(loadSettings());
+    const d = new Date();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const todayLocal = `${d.getFullYear()}-${m}-${day}`;
+    setToday(todayLocal);
+
+    const loaded = loadSettings();
+    // Fill missing schedule dates on the client only (avoid prerender Date())
+    loaded.reminders = loaded.reminders.map((r) =>
+      r.scheduleMode === "daily" || r.scheduleMode === "once"
+        ? { ...r, scheduleDate: r.scheduleDate || todayLocal }
+        : r,
+    );
+    setSettings(loaded);
   }, []);
 
   function update(partial: Partial<JusDoSettings>) {
@@ -25,8 +39,13 @@ export function SettingsForm() {
     setSaved(false);
   }
 
-  function onSave() {
+  async function onSave() {
     saveSettings(settings);
+    if (settings.systemNotifications && typeof Notification !== "undefined") {
+      if (Notification.permission === "default") {
+        await Notification.requestPermission();
+      }
+    }
     setSaved(true);
   }
 
@@ -34,7 +53,10 @@ export function SettingsForm() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-white">Settings</h1>
-        <p className="mt-1 text-sm text-slate-300">Pick your star, tune reminders, protect quiet hours.</p>
+        <p className="mt-1 text-sm text-slate-300">
+          Set date, time, and frequency for alerts. Notifications appear in the bottom-right corner
+          (Teams-style) on web and desktop, with an optional system tray toast.
+        </p>
       </div>
 
       <label className="flex flex-col gap-1 text-sm">
@@ -66,14 +88,33 @@ export function SettingsForm() {
         </div>
       </fieldset>
 
-      <label className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
-        <span>Reminder sound</span>
-        <input
-          type="checkbox"
-          checked={settings.soundEnabled}
-          onChange={(e) => update({ soundEnabled: e.target.checked })}
-        />
-      </label>
+      <div className="space-y-2 rounded-xl border border-white/10 bg-white/5 p-4">
+        <p className="text-sm font-medium text-teal-100">Notification style</p>
+        <label className="flex items-center justify-between text-sm">
+          <span>Corner toast (animatic water hand-off)</span>
+          <input
+            type="checkbox"
+            checked={settings.cornerNotifications}
+            onChange={(e) => update({ cornerNotifications: e.target.checked })}
+          />
+        </label>
+        <label className="flex items-center justify-between text-sm">
+          <span>System / OS notification (like Teams)</span>
+          <input
+            type="checkbox"
+            checked={settings.systemNotifications}
+            onChange={(e) => update({ systemNotifications: e.target.checked })}
+          />
+        </label>
+        <label className="flex items-center justify-between text-sm">
+          <span>Reminder sound</span>
+          <input
+            type="checkbox"
+            checked={settings.soundEnabled}
+            onChange={(e) => update({ soundEnabled: e.target.checked })}
+          />
+        </label>
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
@@ -101,69 +142,106 @@ export function SettingsForm() {
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-lg text-teal-100">Reminders</h2>
-        {settings.reminders.map((rem) => (
-          <div key={rem.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-medium text-white">{rem.label}</p>
-              <label className="flex items-center gap-2 text-xs text-slate-300">
-                On
-                <input
-                  type="checkbox"
-                  checked={rem.enabled}
-                  onChange={(e) => updateReminder(rem.id, { enabled: e.target.checked })}
-                />
-              </label>
-            </div>
-            <label className="mt-3 flex flex-col gap-1 text-sm">
-              <span className="text-slate-400">Message</span>
-              <input
-                className="rounded-lg border border-white/10 bg-black/30 px-3 py-2"
-                value={rem.customMessage || ""}
-                onChange={(e) => updateReminder(rem.id, { customMessage: e.target.value })}
-              />
-            </label>
-            {rem.kind === "alarm" ? (
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <label className="text-sm">
-                  <span className="text-slate-400">Hour</span>
+        <h2 className="text-lg text-teal-100">Reminders — date, time & frequency</h2>
+        {settings.reminders.map((rem) => {
+          const mode = (rem.scheduleMode ||
+            (rem.kind === "alarm" ? "daily" : "interval")) as ScheduleMode;
+          return (
+            <div key={rem.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-medium text-white">{rem.label}</p>
+                <label className="flex items-center gap-2 text-xs text-slate-300">
+                  On
                   <input
-                    type="number"
-                    min={0}
-                    max={23}
-                    className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2"
-                    value={rem.hour ?? 21}
-                    onChange={(e) => updateReminder(rem.id, { hour: Number(e.target.value) })}
-                  />
-                </label>
-                <label className="text-sm">
-                  <span className="text-slate-400">Minute</span>
-                  <input
-                    type="number"
-                    min={0}
-                    max={59}
-                    className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2"
-                    value={rem.minute ?? 0}
-                    onChange={(e) => updateReminder(rem.id, { minute: Number(e.target.value) })}
+                    type="checkbox"
+                    checked={rem.enabled}
+                    onChange={(e) => updateReminder(rem.id, { enabled: e.target.checked })}
                   />
                 </label>
               </div>
-            ) : (
+
               <label className="mt-3 flex flex-col gap-1 text-sm">
-                <span className="text-slate-400">Every N minutes</span>
+                <span className="text-slate-400">Message</span>
                 <input
-                  type="number"
-                  min={1}
                   className="rounded-lg border border-white/10 bg-black/30 px-3 py-2"
-                  value={rem.intervalMinutes}
-                  onChange={(e) =>
-                    updateReminder(rem.id, { intervalMinutes: Number(e.target.value) })
-                  }
+                  value={rem.customMessage || ""}
+                  onChange={(e) => updateReminder(rem.id, { customMessage: e.target.value })}
                 />
               </label>
-            )}
-          </div>
-        ))}
+
+              <label className="mt-3 flex flex-col gap-1 text-sm">
+                <span className="text-slate-400">Frequency</span>
+                <select
+                  className="rounded-lg border border-white/10 bg-black/30 px-3 py-2"
+                  value={mode}
+                  onChange={(e) =>
+                    updateReminder(rem.id, {
+                      scheduleMode: e.target.value as ScheduleMode,
+                      scheduleDate: rem.scheduleDate || today,
+                      hour: rem.hour ?? 9,
+                      minute: rem.minute ?? 0,
+                    })
+                  }
+                >
+                  <option value="interval">Every N minutes</option>
+                  <option value="daily">Every day at a time</option>
+                  <option value="once">Once — specific date & time</option>
+                </select>
+              </label>
+
+              {mode === "interval" ? (
+                <label className="mt-3 flex flex-col gap-1 text-sm">
+                  <span className="text-slate-400">Every N minutes</span>
+                  <input
+                    type="number"
+                    min={1}
+                    className="rounded-lg border border-white/10 bg-black/30 px-3 py-2"
+                    value={rem.intervalMinutes || 60}
+                    onChange={(e) =>
+                      updateReminder(rem.id, { intervalMinutes: Number(e.target.value) })
+                    }
+                  />
+                </label>
+              ) : (
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <label className="flex flex-col gap-1 text-sm sm:col-span-1">
+                    <span className="text-slate-400">
+                      {mode === "once" ? "Date" : "Start from date"}
+                    </span>
+                    <input
+                      type="date"
+                      className="rounded-lg border border-white/10 bg-black/30 px-3 py-2"
+                      value={rem.scheduleDate || today}
+                      onChange={(e) => updateReminder(rem.id, { scheduleDate: e.target.value })}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="text-slate-400">Hour</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={23}
+                      className="rounded-lg border border-white/10 bg-black/30 px-3 py-2"
+                      value={rem.hour ?? 9}
+                      onChange={(e) => updateReminder(rem.id, { hour: Number(e.target.value) })}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="text-slate-400">Minute</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={59}
+                      className="rounded-lg border border-white/10 bg-black/30 px-3 py-2"
+                      value={rem.minute ?? 0}
+                      onChange={(e) => updateReminder(rem.id, { minute: Number(e.target.value) })}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </section>
 
       <button
@@ -173,7 +251,7 @@ export function SettingsForm() {
       >
         Save settings
       </button>
-      {saved ? <p className="text-sm text-teal-300">Saved on this device.</p> : null}
+      {saved ? <p className="text-sm text-teal-300">Saved on this device (web & desktop).</p> : null}
     </div>
   );
 }

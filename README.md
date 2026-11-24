@@ -17,7 +17,7 @@ Walk-and-remind doodle companion starring **Thalapathy Vijay** or **Thala Ajith*
 - Fan quiz with streaks, fun facts, shareable score card
 - Admin: form entry **or** JSON import (merge / replace)
 
-## Local
+## Local (browser)
 
 ```bash
 npm install
@@ -27,6 +27,34 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000).
 
 Admin: [/admin](http://localhost:3000/admin) — password `jusdo-admin` (or `ADMIN_PASSWORD`).
+
+## Portraits on alerts
+
+Put images in `public/portraits/`:
+
+- `vijay.jpg` / `vijay.png`
+- `ajith.jpg` / `ajith.png`
+
+## Windows .exe (Electron)
+
+```bash
+npm run electron:dev          # desktop window while developing
+npm run electron:build        # creates dist-exe/jusDo-0.1.0-portable.exe
+```
+
+### Download button on the website
+
+The site shows **Download jusDo.exe**. The file is ~150MB, so it must **not** live in Vercel `public/`.
+
+1. Build: `npm run electron:build`
+2. Upload `dist-exe/jusDo-0.1.0-portable.exe` to a **GitHub Release** (or any CDN)
+3. On Vercel, set env (optional override):
+
+```
+NEXT_PUBLIC_EXE_DOWNLOAD_URL=https://github.com/mainudeen360blp/jusDo/releases/latest/download/jusDo-0.1.0-portable.exe
+```
+
+Default button URL already points at that GitHub Releases path.
 
 ## Deploy (Vercel)
 

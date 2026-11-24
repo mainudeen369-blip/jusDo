@@ -4,15 +4,26 @@ export type ReminderKind = "water" | "stretch" | "custom" | "alarm";
 
 export type CompanionMood = "happy" | "sleepy" | "hyped" | "proud" | "nudge";
 
+/** How the reminder repeats */
+export type ScheduleMode = "interval" | "daily" | "once";
+
 export interface ReminderConfig {
   id: string;
   kind: ReminderKind;
   label: string;
   enabled: boolean;
+  /** interval mode: every N minutes */
   intervalMinutes: number;
   customMessage?: string;
+  /** daily / once / alarm clock time */
   hour?: number;
   minute?: number;
+  /** scheduling */
+  scheduleMode?: ScheduleMode;
+  /** YYYY-MM-DD — once mode date, or daily start-from date */
+  scheduleDate?: string;
+  /** ISO timestamp of last fire (client) */
+  lastFiredAt?: string;
 }
 
 export interface JusDoSettings {
@@ -22,6 +33,9 @@ export interface JusDoSettings {
   quietHoursEnd: number;
   reminders: ReminderConfig[];
   displayName: string;
+  /** Prefer OS / Teams-style corner toasts */
+  cornerNotifications: boolean;
+  systemNotifications: boolean;
 }
 
 export interface QuizOption {

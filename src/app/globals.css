@@ -24,46 +24,207 @@ body {
   min-height: 100%;
 }
 
-@keyframes doodle-walk {
+@keyframes star-walk {
   0% {
-    transform: translateX(-10%);
+    transform: translateX(-8%);
   }
   100% {
-    transform: translateX(110%);
+    transform: translateX(72%);
   }
 }
 
-@keyframes doodle-leg {
+@keyframes star-offer {
+  0% {
+    transform: translateX(10%) scale(0.96);
+  }
+  35% {
+    transform: translateX(48%) scale(1);
+  }
+  100% {
+    transform: translateX(52%) scale(1);
+  }
+}
+
+@keyframes star-leg {
   0%,
   100% {
-    transform: rotate(-18deg);
+    transform: rotate(-14deg);
   }
   50% {
-    transform: rotate(18deg);
+    transform: rotate(14deg);
   }
 }
 
-.doodle-walk {
-  animation: doodle-walk 12s linear infinite;
+@keyframes star-arm-swing {
+  0%,
+  100% {
+    transform: rotate(8deg);
+  }
+  50% {
+    transform: rotate(-10deg);
+  }
 }
 
-.doodle-leg {
-  transform-origin: top center;
-  animation: doodle-leg 0.45s ease-in-out infinite;
+@keyframes star-arm-offer {
+  0% {
+    transform: rotate(0deg) translate(0, 0);
+  }
+  40% {
+    transform: rotate(-28deg) translate(10px, -6px);
+  }
+  100% {
+    transform: rotate(-32deg) translate(14px, -8px);
+  }
 }
 
-.doodle-leg-delay {
-  animation-delay: 0.225s;
+@keyframes star-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+.star-walk {
+  animation: star-walk 11s linear infinite;
+}
+
+.star-offer {
+  animation: star-offer 1.1s ease-out forwards;
+}
+
+.star-leg {
+  transform-origin: 75px 148px;
+  animation: star-leg 0.42s ease-in-out infinite;
+}
+
+.star-leg-delay {
+  animation-delay: 0.21s;
+}
+
+.star-arm-swing {
+  transform-origin: 48px 96px;
+  animation: star-arm-swing 0.42s ease-in-out infinite;
+}
+
+.star-arm-swing-delay {
+  transform-origin: 114px 94px;
+  animation: star-arm-swing 0.42s ease-in-out infinite reverse;
+}
+
+.star-arm-offer {
+  transform-origin: 114px 94px;
+  animation: star-arm-offer 0.9s ease-out forwards;
+}
+
+.star-arm-idle {
+  transform-origin: 48px 96px;
+}
+
+.star-drop {
+  animation: star-drop 0.9s ease-in infinite;
+}
+
+.star-drop-delay {
+  animation-delay: 0.25s;
+}
+
+@keyframes corner-in {
+  0% {
+    opacity: 0;
+    transform: translate(24px, 16px) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes toast-hand {
+  0% {
+    transform: translate(8px, 6px) rotate(12deg);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-bottle-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes toast-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.corner-toast {
+  animation: corner-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.toast-water-hand {
+  animation: toast-hand 0.7s ease-out both;
+}
+
+.toast-bottle {
+  transform-origin: center top;
+  animation: toast-bottle-bob 1.2s ease-in-out infinite;
+}
+
+.toast-drop {
+  animation: toast-drop 0.9s ease-in infinite;
+}
+
+.toast-drop-delay {
+  animation-delay: 0.22s;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .doodle-walk,
-  .doodle-leg,
-  .doodle-leg-delay {
+  .star-walk,
+  .star-offer,
+  .star-leg,
+  .star-leg-delay,
+  .star-arm-swing,
+  .star-arm-swing-delay,
+  .star-arm-offer,
+  .star-drop,
+  .star-drop-delay,
+  .corner-toast,
+  .toast-water-hand,
+  .toast-bottle,
+  .toast-drop,
+  .toast-drop-delay {
     animation: none;
   }
 
-  .doodle-walk {
-    left: 40%;
+  .star-walk,
+  .star-offer {
+    left: 36%;
   }
 }

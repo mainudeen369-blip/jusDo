@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import type { StarId } from "@/lib/types";
 import { starLabel } from "@/lib/settings";
 
 const NUDGES = [
-  "Finish a glass of water before your next scroll.",
-  "Take 10 deep breaths — interval training for calm.",
-  "Stand up and walk 20 steps with your doodle energy.",
-  "Send a kind ping to a friend in your fan club.",
-  "Log one win from today — tiny counts.",
+  "Please finish a glass of water before your next scroll.",
+  "Take 10 calm breaths — a quiet pause strengthens focus.",
+  "Stand up and walk twenty steps — move with dignity.",
+  "Share a kind word with someone in your fan family.",
+  "Note one good effort from today — small steps matter.",
 ];
 
 const TRIVIA_TEASERS = [
@@ -19,19 +19,16 @@ const TRIVIA_TEASERS = [
   "Thala or Thalapathy — can you match titles without blinking?",
 ];
 
-function dayIndex() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  return Math.floor((now.getTime() - start.getTime()) / 86400000);
-}
-
 export function DailyChallenge({ star }: { star: StarId }) {
-  const { nudge, tease } = useMemo(() => {
-    const i = dayIndex();
-    return {
-      nudge: NUDGES[i % NUDGES.length],
-      tease: TRIVIA_TEASERS[i % TRIVIA_TEASERS.length],
-    };
+  const [nudge, setNudge] = useState(NUDGES[0]);
+  const [tease, setTease] = useState(TRIVIA_TEASERS[0]);
+
+  useEffect(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const i = Math.floor((now.getTime() - start.getTime()) / 86400000);
+    setNudge(NUDGES[i % NUDGES.length]);
+    setTease(TRIVIA_TEASERS[i % TRIVIA_TEASERS.length]);
   }, []);
 
   return (
