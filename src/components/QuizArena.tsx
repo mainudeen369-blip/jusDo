@@ -232,6 +232,7 @@ export function QuizArena() {
         streak: best1,
         at: new Date().toISOString(),
         guestId: guest?.id,
+        difficulty,
       },
     ];
     if (playMode === "versus") {
@@ -242,6 +243,7 @@ export function QuizArena() {
         total: round.length,
         streak: best2,
         at: new Date().toISOString(),
+        difficulty,
       });
     }
     try {

@@ -6,7 +6,7 @@ import {
   writeGithubJsonFile,
 } from "./github-data";
 import { seedDataPath, writableDataPath } from "./runtime-fs";
-import type { QuizScorePayload, StarId } from "./types";
+import type { QuizDifficulty, QuizScorePayload, StarId } from "./types";
 
 export interface LeaderboardEntry {
   playerName: string;
@@ -17,6 +17,7 @@ export interface LeaderboardEntry {
   percent: number;
   streak: number;
   at: string;
+  difficulty: QuizDifficulty;
 }
 
 const WRITE_PATH = () => writableDataPath("scores.json");
@@ -24,6 +25,25 @@ const SEED_PATH = () => seedDataPath("scores.json");
 const GITHUB_PATH = "data/scores.json";
 const MAX_ENTRIES = 200;
 const TOP_N = 10;
+
+function normalizeDifficulty(d?: string): QuizDifficulty {
+  return d === "difficult" ? "difficult" : "easy";
+}
+
+function difficultyRank(d: QuizDifficulty): number {
+  // Difficult wins outrank Easy at the same percent
+  return d === "difficult" ? 2 : 1;
+}
+
+function isBetter(a: LeaderboardEntry, b: LeaderboardEntry): boolean {
+  const da = difficultyRank(a.difficulty);
+  const db = difficultyRank(b.difficulty);
+  if (da !== db) return da > db;
+  if (a.percent !== b.percent) return a.percent > b.percent;
+  if (a.score !== b.score) return a.score > b.score;
+  if (a.total !== b.total) return a.total > b.total;
+  return a.streak > b.streak;
+}
 
 async function readJsonFile(filePath: string): Promise<QuizScorePayload[] | null> {
   try {
@@ -75,7 +95,7 @@ export async function addScore(entry: QuizScorePayload): Promise<QuizScorePayloa
     await writeGithubJsonFile(
       GITHUB_PATH,
       next,
-      `jusDo: score ${entry.playerName} ${entry.score}/${entry.total}`,
+      `jusDo: score ${entry.playerName} ${entry.score}/${entry.total} (${entry.difficulty || "easy"})`,
     );
     await writeLocalCache(next);
     return next;
@@ -85,14 +105,19 @@ export async function addScore(entry: QuizScorePayload): Promise<QuizScorePayloa
   return next;
 }
 
-/** Best run per guestId (or playerName), ranked by percent then score then streak. */
+/**
+ * Best run per guestId+difficulty (so Easy and Difficult both show).
+ * Rank: Difficult above Easy, then percent, score, total, streak.
+ */
 export function buildLeaderboard(scores: QuizScorePayload[], limit = TOP_N): LeaderboardEntry[] {
   const best = new Map<string, LeaderboardEntry>();
 
   for (const s of scores) {
     const total = Math.max(1, s.total || 1);
     const percent = Math.round((s.score / total) * 100);
-    const key = s.guestId || s.playerName.toLowerCase();
+    const difficulty = normalizeDifficulty(s.difficulty);
+    const who = s.guestId || s.playerName.toLowerCase();
+    const key = `${who}::${difficulty}`;
     const row: LeaderboardEntry = {
       playerName: s.playerName,
       guestId: s.guestId,
@@ -102,23 +127,19 @@ export function buildLeaderboard(scores: QuizScorePayload[], limit = TOP_N): Lea
       percent,
       streak: s.streak || 0,
       at: s.at,
+      difficulty,
     };
     const prev = best.get(key);
-    if (
-      !prev ||
-      row.percent > prev.percent ||
-      (row.percent === prev.percent && row.score > prev.score) ||
-      (row.percent === prev.percent && row.score === prev.score && row.streak > prev.streak)
-    ) {
+    if (!prev || isBetter(row, prev)) {
       best.set(key, row);
     }
   }
 
   return [...best.values()]
     .sort((a, b) => {
-      if (b.percent !== a.percent) return b.percent - a.percent;
-      if (b.score !== a.score) return b.score - a.score;
-      return b.streak - a.streak;
+      if (isBetter(a, b)) return -1;
+      if (isBetter(b, a)) return 1;
+      return 0;
     })
     .slice(0, limit);
 }

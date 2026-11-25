@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addScore, buildLeaderboard, getAllScores, storageNote } from "@/lib/scores-store";
-import type { QuizScorePayload, StarId } from "@/lib/types";
+import type { QuizDifficulty, QuizScorePayload, StarId } from "@/lib/types";
 
 export async function GET() {
   const scores = await getAllScores();
@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
     const total = Number(body.total);
     const streak = Number(body.streak || 0);
     const guestId = body.guestId ? String(body.guestId).slice(0, 64) : undefined;
+    const difficulty: QuizDifficulty =
+      body.difficulty === "difficult" ? "difficult" : "easy";
 
     if (!playerName || (club !== "vijay" && club !== "ajith")) {
       return NextResponse.json({ error: "playerName and club required" }, { status: 400 });
@@ -33,6 +35,7 @@ export async function POST(req: NextRequest) {
       streak: Math.max(0, streak),
       at: new Date().toISOString(),
       guestId,
+      difficulty,
     };
 
     const all = await addScore(entry);

@@ -74,6 +74,8 @@ export interface QuizScorePayload {
   at: string;
   /** Guest session id for leaderboard dedupe */
   guestId?: string;
+  /** Quiz set used for this score */
+  difficulty?: QuizDifficulty;
 }
 
 export interface RivalryStats {
