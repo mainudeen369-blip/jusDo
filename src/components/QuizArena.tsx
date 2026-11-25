@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { CrackerBurst } from "@/components/CrackerBurst";
 import { loadGuest } from "@/lib/guest";
+import { rateFan } from "@/lib/fan-rank";
 import { clubLabel, loadRivalry, loadSettings, saveRivalry, SCORES_KEY } from "@/lib/settings";
 import { DEFAULT_QUIZ_CONFIG, type QuizConfig } from "@/lib/quiz-config-shared";
 import type {
@@ -493,55 +495,118 @@ export function QuizArena() {
       ) : null}
 
       {done ? (
-        <div className="rounded-2xl border border-teal-400/30 bg-teal-400/10 p-5">
-          {playMode === "versus" ? (
-            <>
-              <h2 className="font-[family-name:var(--font-display)] text-2xl text-white">
-                {score1 === score2
-                  ? "It's a draw!"
-                  : score1 > score2
-                    ? `${name} wins!`
-                    : `${name2} wins!`}
-              </h2>
-              <p className="mt-2 text-sm text-slate-200">
-                {name} ({clubLabel(club)}): {score1}/{round.length}
-              </p>
-              <p className="text-sm text-slate-200">
-                {name2} ({clubLabel(club2)}): {score2}/{round.length}
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 className="font-[family-name:var(--font-display)] text-2xl text-white">
-                {score1}/{round.length} for {clubLabel(club)}
-              </h2>
-              <p className="mt-2 text-sm text-slate-300">Best streak: {best1}</p>
-            </>
-          )}
-          {rivalry ? (
-            <p className="mt-2 text-xs text-slate-400">
-              Club wins — Vijay {rivalry.vijayWins} · Ajith {rivalry.ajithWins}
-            </p>
-          ) : null}
-          <button
-            type="button"
-            onClick={startRound}
-            className="mt-4 rounded-lg border border-white/15 px-4 py-2 text-sm text-white"
-          >
-            Play again
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              clearTimer();
-              setRound([]);
-              setDone(false);
-            }}
-            className="ml-2 mt-4 rounded-lg bg-white/10 px-4 py-2 text-sm text-white"
-          >
-            Back to setup
-          </button>
-        </div>
+        <>
+          <CrackerBurst active={done} />
+          <div className="fan-rank-card relative overflow-hidden rounded-2xl border border-[#f4c95f]/40 bg-gradient-to-br from-[#f4c95f]/15 via-teal-400/10 to-transparent p-5">
+            {(() => {
+              const rank1 = rateFan(score1, round.length, club, name);
+              const rank2 =
+                playMode === "versus" ? rateFan(score2, round.length, club2, name2) : null;
+              const vibeRing =
+                rank1.vibe === "legend"
+                  ? "border-[#f4c95f]/50 bg-[#f4c95f]/15"
+                  : rank1.vibe === "hot"
+                    ? "border-teal-300/40 bg-teal-400/10"
+                    : "border-white/15 bg-white/5";
+              return (
+                <>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#f4c95f]">
+                    Round complete · crackers on!
+                  </p>
+                  {playMode === "versus" ? (
+                    <>
+                      <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl text-white">
+                        {score1 === score2
+                          ? "Mass draw — both fans shine!"
+                          : score1 > score2
+                            ? `${name} takes the stage!`
+                            : `${name2} takes the stage!`}
+                      </h2>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <div className={`rounded-xl border p-3 ${vibeRing}`}>
+                          <p className="text-xs text-slate-400">
+                            {name} · {score1}/{round.length}
+                          </p>
+                          <p className="mt-1 text-lg font-semibold text-[#f4c95f]">{rank1.title}</p>
+                          <p className="mt-1 text-xs text-slate-300">{rank1.tagline}</p>
+                          <p className="mt-2 text-sm text-[#f4c95f]">
+                            {"★".repeat(rank1.stars)}
+                            <span className="text-slate-600">
+                              {"★".repeat(Math.max(0, 5 - rank1.stars))}
+                            </span>
+                          </p>
+                        </div>
+                        {rank2 ? (
+                          <div className="rounded-xl border border-white/15 bg-white/5 p-3">
+                            <p className="text-xs text-slate-400">
+                              {name2} · {score2}/{round.length}
+                            </p>
+                            <p className="mt-1 text-lg font-semibold text-teal-200">{rank2.title}</p>
+                            <p className="mt-1 text-xs text-slate-300">{rank2.tagline}</p>
+                            <p className="mt-2 text-sm text-teal-200">
+                              {"★".repeat(rank2.stars)}
+                              <span className="text-slate-600">
+                                {"★".repeat(Math.max(0, 5 - rank2.stars))}
+                              </span>
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-white">
+                        Bravo, {name}!
+                      </h2>
+                      <p className="mt-1 text-sm text-slate-300">
+                        {score1}/{round.length} · {clubLabel(club)} · best streak {best1}
+                        {difficulty === "difficult" ? " · Difficult set" : ""}
+                      </p>
+                      <div className={`mt-4 rounded-xl border p-4 ${vibeRing}`}>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-400">
+                          Your fan rating
+                        </p>
+                        <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[#f4c95f]">
+                          {rank1.title}
+                        </p>
+                        <p className="mt-2 text-sm leading-relaxed text-slate-200">{rank1.tagline}</p>
+                        <p className="mt-3 text-xl text-[#f4c95f]">
+                          {"★".repeat(rank1.stars)}
+                          <span className="text-slate-600">
+                            {"★".repeat(Math.max(0, 5 - rank1.stars))}
+                          </span>
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  {rivalry ? (
+                    <p className="mt-3 text-xs text-slate-400">
+                      Club wins — Vijay {rivalry.vijayWins} · Ajith {rivalry.ajithWins}
+                    </p>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={startRound}
+                    className="mt-4 rounded-lg bg-[#f4c95f] px-4 py-2 text-sm font-semibold text-[#2a1a00]"
+                  >
+                    Play again
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearTimer();
+                      setRound([]);
+                      setDone(false);
+                    }}
+                    className="ml-2 mt-4 rounded-lg border border-white/15 px-4 py-2 text-sm text-white"
+                  >
+                    Back to setup
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </>
       ) : null}
     </div>
   );
