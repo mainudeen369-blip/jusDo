@@ -145,7 +145,15 @@ export function CompanionStage() {
           <a href="/settings" className="text-teal-200 underline-offset-2 hover:underline">
             Settings
           </a>
-          , then click <strong>Save</strong>. Alerts work on every page while this site tab stays open.
+          , then click <strong>Save</strong>. Play{" "}
+          <a href="/quiz" className="text-teal-200 underline-offset-2 hover:underline">
+            Fan Quiz
+          </a>{" "}
+          or{" "}
+          <a href="/scenes" className="text-[#f4c95f] underline-offset-2 hover:underline">
+            Movie Scenes
+          </a>{" "}
+          (Tamil film riddles). Alerts work while this site tab stays open.
         </p>
         <p className="text-xs text-teal-200/80">{waterHint}</p>
         <div className="mt-2 flex flex-wrap items-center gap-3">

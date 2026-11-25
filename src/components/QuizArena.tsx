@@ -233,6 +233,7 @@ export function QuizArena() {
         at: new Date().toISOString(),
         guestId: guest?.id,
         difficulty,
+        game: "fan",
       },
     ];
     if (playMode === "versus") {
@@ -244,6 +245,7 @@ export function QuizArena() {
         streak: best2,
         at: new Date().toISOString(),
         difficulty,
+        game: "fan",
       });
     }
     try {

@@ -10,6 +10,7 @@ import { loadSettings, saveSettings } from "@/lib/settings";
 const LINKS = [
   { href: "/", label: "Companion" },
   { href: "/quiz", label: "Fan Quiz" },
+  { href: "/scenes", label: "Movie Scenes" },
   { href: "/settings", label: "Settings" },
   { href: "/admin", label: "Admin" },
 ];

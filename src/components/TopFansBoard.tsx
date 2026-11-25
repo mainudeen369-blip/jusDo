@@ -81,6 +81,7 @@ function FanList({
 export function TopFansBoard() {
   const [easy, setEasy] = useState<TopFan[]>([]);
   const [difficult, setDifficult] = useState<TopFan[]>([]);
+  const [scenes, setScenes] = useState<TopFan[]>([]);
   const [loading, setLoading] = useState(true);
 
   function load() {
@@ -89,6 +90,7 @@ export function TopFansBoard() {
       .then((data) => {
         setEasy(data.topEasy || []);
         setDifficult(data.topDifficult || []);
+        setScenes(data.topScenes || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -117,9 +119,12 @@ export function TopFansBoard() {
       {loading ? (
         <p className="mt-3 text-sm text-slate-400">Loading board…</p>
       ) : (
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <FanList title="Difficult" accent="gold" rows={difficult} />
-          <FanList title="Easy" accent="teal" rows={easy} />
+        <div className="mt-3 space-y-3">
+          <div className="grid gap-3 md:grid-cols-2">
+            <FanList title="Fan Quiz · Difficult" accent="gold" rows={difficult} />
+            <FanList title="Fan Quiz · Easy" accent="teal" rows={easy} />
+          </div>
+          <FanList title="Movie Scenes · Difficult" accent="gold" rows={scenes} />
         </div>
       )}
     </section>

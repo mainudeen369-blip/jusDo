@@ -8,6 +8,7 @@ export async function GET() {
   return NextResponse.json({
     topEasy: boards.easy,
     topDifficult: boards.difficult,
+    topScenes: boards.scenes,
     /** flat mix kept for older clients */
     top: [...boards.difficult, ...boards.easy].slice(0, 10),
     count: scores.length,
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
     const guestId = body.guestId ? String(body.guestId).slice(0, 64) : undefined;
     const difficulty: QuizDifficulty =
       body.difficulty === "difficult" ? "difficult" : "easy";
+    const game = body.game === "scenes" ? "scenes" : "fan";
 
     if (!playerName || (club !== "vijay" && club !== "ajith")) {
       return NextResponse.json({ error: "playerName and club required" }, { status: 400 });
@@ -43,6 +45,7 @@ export async function POST(req: NextRequest) {
       at: new Date().toISOString(),
       guestId,
       difficulty,
+      game,
     };
 
     const all = await addScore(entry);
@@ -51,6 +54,7 @@ export async function POST(req: NextRequest) {
       ok: true,
       topEasy: boards.easy,
       topDifficult: boards.difficult,
+      topScenes: boards.scenes,
       top: buildLeaderboard(all, 10),
       storageNote: storageNote(),
     });

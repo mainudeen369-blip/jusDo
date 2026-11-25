@@ -115,6 +115,10 @@ export async function addScore(entry: QuizScorePayload): Promise<QuizScorePayloa
   return next;
 }
 
+function isFanGame(s: QuizScorePayload) {
+  return s.game !== "scenes";
+}
+
 function buildBoardForDifficulty(
   scores: QuizScorePayload[],
   difficulty: QuizDifficulty,
@@ -123,6 +127,7 @@ function buildBoardForDifficulty(
   const best = new Map<string, LeaderboardEntry>();
 
   for (const s of scores) {
+    if (!isFanGame(s)) continue;
     if (normalizeDifficulty(s) !== difficulty) continue;
     const total = Math.max(1, s.total || 1);
     const percent = Math.round((s.score / total) * 100);
@@ -154,11 +159,42 @@ function buildBoardForDifficulty(
     .slice(0, limit);
 }
 
-/** Separate Easy and Difficult boards. */
+function buildScenesBoard(scores: QuizScorePayload[], limit: number): LeaderboardEntry[] {
+  const best = new Map<string, LeaderboardEntry>();
+  for (const s of scores) {
+    if (s.game !== "scenes") continue;
+    const total = Math.max(1, s.total || 1);
+    const percent = Math.round((s.score / total) * 100);
+    const who = s.guestId || s.playerName.toLowerCase();
+    const row: LeaderboardEntry = {
+      playerName: s.playerName,
+      guestId: s.guestId,
+      club: s.club,
+      score: s.score,
+      total,
+      percent,
+      streak: s.streak || 0,
+      at: s.at,
+      difficulty: "difficult",
+    };
+    const prev = best.get(who);
+    if (!prev || isBetter(row, prev)) best.set(who, row);
+  }
+  return [...best.values()]
+    .sort((a, b) => {
+      if (a.percent !== b.percent) return b.percent - a.percent;
+      if (a.score !== b.score) return b.score - a.score;
+      return b.streak - a.streak;
+    })
+    .slice(0, limit);
+}
+
+/** Separate Easy / Difficult fan boards + Movie Scenes board. */
 export function buildLeaderboards(scores: QuizScorePayload[], limit = TOP_N) {
   return {
     easy: buildBoardForDifficulty(scores, "easy", limit),
     difficult: buildBoardForDifficulty(scores, "difficult", limit),
+    scenes: buildScenesBoard(scores, limit),
   };
 }
 

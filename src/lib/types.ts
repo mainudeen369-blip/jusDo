@@ -76,6 +76,8 @@ export interface QuizScorePayload {
   guestId?: string;
   /** Quiz set used for this score */
   difficulty?: QuizDifficulty;
+  /** fan = Vijay/Ajith quiz; scenes = Tamil movie riddle game */
+  game?: "fan" | "scenes";
 }
 
 export interface RivalryStats {
