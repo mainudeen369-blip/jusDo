@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addScore, buildLeaderboard, getAllScores, storageNote } from "@/lib/scores-store";
+import { addScore, buildLeaderboard, buildLeaderboards, getAllScores, storageNote } from "@/lib/scores-store";
 import type { QuizDifficulty, QuizScorePayload, StarId } from "@/lib/types";
 
 export async function GET() {
   const scores = await getAllScores();
-  const top = buildLeaderboard(scores, 10);
-  return NextResponse.json({ top, count: scores.length, storageNote: storageNote() });
+  const boards = buildLeaderboards(scores, 10);
+  return NextResponse.json({
+    topEasy: boards.easy,
+    topDifficult: boards.difficult,
+    /** flat mix kept for older clients */
+    top: [...boards.difficult, ...boards.easy].slice(0, 10),
+    count: scores.length,
+    storageNote: storageNote(),
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -39,8 +46,14 @@ export async function POST(req: NextRequest) {
     };
 
     const all = await addScore(entry);
-    const top = buildLeaderboard(all, 10);
-    return NextResponse.json({ ok: true, top, storageNote: storageNote() });
+    const boards = buildLeaderboards(all, 10);
+    return NextResponse.json({
+      ok: true,
+      topEasy: boards.easy,
+      topDifficult: boards.difficult,
+      top: buildLeaderboard(all, 10),
+      storageNote: storageNote(),
+    });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }

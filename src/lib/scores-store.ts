@@ -105,19 +105,18 @@ export async function addScore(entry: QuizScorePayload): Promise<QuizScorePayloa
   return next;
 }
 
-/**
- * Best run per guestId+difficulty (so Easy and Difficult both show).
- * Rank: Difficult above Easy, then percent, score, total, streak.
- */
-export function buildLeaderboard(scores: QuizScorePayload[], limit = TOP_N): LeaderboardEntry[] {
+function buildBoardForDifficulty(
+  scores: QuizScorePayload[],
+  difficulty: QuizDifficulty,
+  limit: number,
+): LeaderboardEntry[] {
   const best = new Map<string, LeaderboardEntry>();
 
   for (const s of scores) {
+    if (normalizeDifficulty(s.difficulty) !== difficulty) continue;
     const total = Math.max(1, s.total || 1);
     const percent = Math.round((s.score / total) * 100);
-    const difficulty = normalizeDifficulty(s.difficulty);
     const who = s.guestId || s.playerName.toLowerCase();
-    const key = `${who}::${difficulty}`;
     const row: LeaderboardEntry = {
       playerName: s.playerName,
       guestId: s.guestId,
@@ -129,19 +128,34 @@ export function buildLeaderboard(scores: QuizScorePayload[], limit = TOP_N): Lea
       at: s.at,
       difficulty,
     };
-    const prev = best.get(key);
+    const prev = best.get(who);
     if (!prev || isBetter(row, prev)) {
-      best.set(key, row);
+      best.set(who, row);
     }
   }
 
   return [...best.values()]
     .sort((a, b) => {
-      if (isBetter(a, b)) return -1;
-      if (isBetter(b, a)) return 1;
-      return 0;
+      if (a.percent !== b.percent) return b.percent - a.percent;
+      if (a.score !== b.score) return b.score - a.score;
+      if (a.total !== b.total) return b.total - a.total;
+      return b.streak - a.streak;
     })
     .slice(0, limit);
+}
+
+/** Separate Easy and Difficult boards. */
+export function buildLeaderboards(scores: QuizScorePayload[], limit = TOP_N) {
+  return {
+    easy: buildBoardForDifficulty(scores, "easy", limit),
+    difficult: buildBoardForDifficulty(scores, "difficult", limit),
+  };
+}
+
+/** @deprecated use buildLeaderboards — kept for any callers expecting a flat list */
+export function buildLeaderboard(scores: QuizScorePayload[], limit = TOP_N): LeaderboardEntry[] {
+  const { difficult, easy } = buildLeaderboards(scores, limit);
+  return [...difficult, ...easy].slice(0, limit);
 }
 
 export function storageNote() {
