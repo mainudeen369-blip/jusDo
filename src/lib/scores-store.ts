@@ -26,8 +26,18 @@ const GITHUB_PATH = "data/scores.json";
 const MAX_ENTRIES = 200;
 const TOP_N = 10;
 
-function normalizeDifficulty(d?: string): QuizDifficulty {
-  return d === "difficult" ? "difficult" : "easy";
+/** Difficult set shipped ~ this time; legacy rows have no difficulty field. */
+const DIFFICULT_LAUNCH_MS = Date.parse("2026-11-25T05:25:00.000Z");
+
+function normalizeDifficulty(s: Pick<QuizScorePayload, "difficulty" | "total" | "at">): QuizDifficulty {
+  if (s.difficulty === "difficult" || s.difficulty === "easy") return s.difficulty;
+  // Legacy scores: 15-Q rounds after Difficult launch were almost all Difficult plays
+  // (Easy often still showed as 7 before that, or was tagged once the field existed).
+  const at = Date.parse(s.at || "");
+  if (Number.isFinite(at) && at >= DIFFICULT_LAUNCH_MS && (s.total || 0) >= 15) {
+    return "difficult";
+  }
+  return "easy";
 }
 
 function difficultyRank(d: QuizDifficulty): number {
@@ -113,7 +123,7 @@ function buildBoardForDifficulty(
   const best = new Map<string, LeaderboardEntry>();
 
   for (const s of scores) {
-    if (normalizeDifficulty(s.difficulty) !== difficulty) continue;
+    if (normalizeDifficulty(s) !== difficulty) continue;
     const total = Math.max(1, s.total || 1);
     const percent = Math.round((s.score / total) * 100);
     const who = s.guestId || s.playerName.toLowerCase();
