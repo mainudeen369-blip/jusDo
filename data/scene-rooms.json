@@ -84,5 +84,25 @@
     },
     "createdAt": "2026-11-25T08:10:00.094Z",
     "updatedAt": "2026-11-25T08:10:50.902Z"
+  },
+  "X6LNRK": {
+    "code": "X6LNRK",
+    "hostId": "p-mwvuf1o5-f0tlg6",
+    "players": [
+      {
+        "id": "p-mwvuf1o5-f0tlg6",
+        "name": "haja"
+      }
+    ],
+    "status": "lobby",
+    "questionIds": [],
+    "questionIndex": 0,
+    "answers": {},
+    "lastResults": {},
+    "scores": {
+      "p-mwvuf1o5-f0tlg6": 0
+    },
+    "createdAt": "2026-11-25T08:12:06.468Z",
+    "updatedAt": "2026-11-25T08:12:06.468Z"
   }
 }
