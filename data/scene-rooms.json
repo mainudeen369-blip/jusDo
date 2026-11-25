@@ -16,8 +16,24 @@
         "name": "Gamma"
       }
     ],
-    "status": "lobby",
-    "questionIds": [],
+    "status": "playing",
+    "questionIds": [
+      "sc1136",
+      "sc0172",
+      "sc0581",
+      "sc0272",
+      "sc1018",
+      "sc1381",
+      "sc0616",
+      "sc0790",
+      "sc0336",
+      "sc1475",
+      "sc0975",
+      "sc1491",
+      "sc0629",
+      "sc1412",
+      "sc0812"
+    ],
     "questionIndex": 0,
     "answers": {},
     "lastResults": {},
@@ -27,6 +43,6 @@
       "p3": 0
     },
     "createdAt": "2026-11-25T07:56:20.715Z",
-    "updatedAt": "2026-11-25T07:56:25.792Z"
+    "updatedAt": "2026-11-25T07:56:28.064Z"
   }
 }
