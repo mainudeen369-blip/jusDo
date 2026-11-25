@@ -16,7 +16,7 @@
         "name": "Gamma"
       }
     ],
-    "status": "playing",
+    "status": "question_result",
     "questionIds": [
       "sc1136",
       "sc0172",
@@ -37,15 +37,21 @@
     "questionIndex": 0,
     "answers": {
       "p1": "a",
-      "p2": "b"
+      "p2": "b",
+      "p3": "c"
     },
-    "lastResults": {},
+    "lastResults": {
+      "p1": "wrong",
+      "p2": "correct",
+      "p3": "wrong"
+    },
     "scores": {
       "p1": 0,
-      "p2": 0,
+      "p2": 1,
       "p3": 0
     },
     "createdAt": "2026-11-25T07:56:20.715Z",
-    "updatedAt": "2026-11-25T07:56:32.851Z"
+    "updatedAt": "2026-11-25T07:56:35.162Z",
+    "resultAt": "2026-11-25T07:56:35.164Z"
   }
 }
