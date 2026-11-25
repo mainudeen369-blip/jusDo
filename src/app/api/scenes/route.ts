@@ -5,7 +5,9 @@ export async function GET() {
   const scenes = await getScenes();
   return NextResponse.json({
     scenes,
+    count: scenes.length,
     questionsPerRound: 15,
-    note: "Tamil movie scene riddles — guess the film.",
+    setsApprox: Math.floor(scenes.length / 15),
+    note: "Tamil movie scene riddles (EN + TA) — Rajini, Kamal, Vijay, Ajith & more.",
   });
 }

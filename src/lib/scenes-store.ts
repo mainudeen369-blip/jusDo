@@ -1,16 +1,11 @@
 import { promises as fs } from "fs";
-import {
-  githubStoreConfigured,
-  readGithubJsonFile,
-  writeGithubJsonFile,
-} from "./github-data";
 import { seedDataPath, writableDataPath } from "./runtime-fs";
-import { SEED_SCENES } from "./seed-scenes";
 import type { QuizQuestion } from "./types";
 
 const WRITE_PATH = () => writableDataPath("scenes.json");
 const SEED_PATH = () => seedDataPath("scenes.json");
-const GITHUB_PATH = "data/scenes.json";
+
+let memoryCache: QuizQuestion[] | null = null;
 
 async function readJsonFile(filePath: string): Promise<QuizQuestion[] | null> {
   try {
@@ -23,40 +18,26 @@ async function readJsonFile(filePath: string): Promise<QuizQuestion[] | null> {
   return null;
 }
 
-function pathDirname(filePath: string) {
-  const i = Math.max(filePath.lastIndexOf("/"), filePath.lastIndexOf("\\"));
-  return i >= 0 ? filePath.slice(0, i) : ".";
-}
-
-async function writeLocalCache(scenes: QuizQuestion[]) {
-  const target = WRITE_PATH();
-  try {
-    await fs.mkdir(pathDirname(target), { recursive: true });
-    await fs.writeFile(target, JSON.stringify(scenes, null, 2), "utf8");
-  } catch {
-    // best-effort
-  }
-}
-
+/** 1500-scene bank from committed data/scenes.json (bundled on Vercel). */
 export async function getScenes(): Promise<QuizQuestion[]> {
-  if (githubStoreConfigured()) {
-    try {
-      const remote = await readGithubJsonFile<QuizQuestion[]>(GITHUB_PATH);
-      if (Array.isArray(remote) && remote.length > 0) {
-        await writeLocalCache(remote);
-        return remote;
-      }
-    } catch {
-      // fall through
-    }
-  }
-  return (await readJsonFile(WRITE_PATH())) || (await readJsonFile(SEED_PATH())) || SEED_SCENES;
+  if (memoryCache) return memoryCache;
+  const scenes =
+    (await readJsonFile(SEED_PATH())) ||
+    (await readJsonFile(WRITE_PATH())) ||
+    [];
+  if (scenes.length) memoryCache = scenes;
+  return scenes;
 }
 
-export async function saveScenes(scenes: QuizQuestion[]): Promise<QuizQuestion[]> {
-  if (githubStoreConfigured()) {
-    await writeGithubJsonFile(GITHUB_PATH, scenes, "jusDo: update movie scene riddles");
+export function shuffleScenes<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  await writeLocalCache(scenes);
-  return scenes;
+  return copy;
+}
+
+export function pickRound(scenes: QuizQuestion[], size = 15): QuizQuestion[] {
+  return shuffleScenes(scenes).slice(0, Math.min(size, scenes.length));
 }

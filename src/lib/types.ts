@@ -50,6 +50,8 @@ export interface JusDoSettings {
 export interface QuizOption {
   id: string;
   text: string;
+  /** Tamil option label */
+  textTa?: string;
 }
 
 export type QuizDifficulty = "easy" | "difficult";
@@ -60,9 +62,12 @@ export interface QuizQuestion {
   /** easy = current fan bank; difficult = deeper combo / scene / music trivia */
   difficulty?: QuizDifficulty;
   prompt: string;
+  /** Tamil translation of the prompt */
+  promptTa?: string;
   options: QuizOption[];
   correctOptionId: string;
   funFact?: string;
+  hero?: string;
 }
 
 export interface QuizScorePayload {
