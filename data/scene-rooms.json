@@ -35,7 +35,9 @@
       "sc0812"
     ],
     "questionIndex": 0,
-    "answers": {},
+    "answers": {
+      "p1": "a"
+    },
     "lastResults": {},
     "scores": {
       "p1": 0,
@@ -43,6 +45,6 @@
       "p3": 0
     },
     "createdAt": "2026-11-25T07:56:20.715Z",
-    "updatedAt": "2026-11-25T07:56:28.064Z"
+    "updatedAt": "2026-11-25T07:56:30.236Z"
   }
 }
