@@ -213,15 +213,15 @@ const DIFFICULT: QuizQuestion[] = [
     star: "vijay",
     difficulty: "difficult",
     prompt:
-      "Which Vijay mass film features comedian Vivek in a prominent comic supporting role beside the angry young hero arc?",
+      "Which Vijay film features comedian Vivek in a prominent comic supporting role?",
     options: [
-      { id: "a", text: "Leo" },
-      { id: "b", text: "Sivakasi" },
+      { id: "a", text: "Sivakasi" },
+      { id: "b", text: "Udhaya" },
       { id: "c", text: "Master" },
       { id: "d", text: "Beast" },
     ],
     correctOptionId: "b",
-    funFact: "Sivakasi (2005) mixes village mass drama with Vivek's comedy track.",
+    funFact: "Udhaya (2004) has Vivek's comedy track with Vijay — not Sivakasi.",
   },
   {
     id: "d5",

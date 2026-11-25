@@ -383,15 +383,15 @@
     "id": "d4",
     "star": "vijay",
     "difficulty": "difficult",
-    "prompt": "Which Vijay mass film features comedian Vivek in a prominent comic supporting role beside the angry young hero arc?",
+    "prompt": "Which Vijay film features comedian Vivek in a prominent comic supporting role?",
     "options": [
       {
         "id": "a",
-        "text": "Leo"
+        "text": "Sivakasi"
       },
       {
         "id": "b",
-        "text": "Sivakasi"
+        "text": "Udhaya"
       },
       {
         "id": "c",
@@ -403,7 +403,7 @@
       }
     ],
     "correctOptionId": "b",
-    "funFact": "Sivakasi (2005) mixes village mass drama with Vivek's comedy track."
+    "funFact": "Udhaya (2004) has Vivek's comedy track with Vijay — not Sivakasi."
   },
   {
     "id": "d5",
