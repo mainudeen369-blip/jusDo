@@ -1,0 +1,22 @@
+{
+  "MHD4GB": {
+    "code": "MHD4GB",
+    "hostId": "p1",
+    "players": [
+      {
+        "id": "p1",
+        "name": "Alpha"
+      }
+    ],
+    "status": "lobby",
+    "questionIds": [],
+    "questionIndex": 0,
+    "answers": {},
+    "lastResults": {},
+    "scores": {
+      "p1": 0
+    },
+    "createdAt": "2026-11-25T07:56:20.715Z",
+    "updatedAt": "2026-11-25T07:56:20.715Z"
+  }
+}
