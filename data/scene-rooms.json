@@ -10,6 +10,10 @@
       {
         "id": "p2",
         "name": "Beta"
+      },
+      {
+        "id": "p3",
+        "name": "Gamma"
       }
     ],
     "status": "lobby",
@@ -19,9 +23,10 @@
     "lastResults": {},
     "scores": {
       "p1": 0,
-      "p2": 0
+      "p2": 0,
+      "p3": 0
     },
     "createdAt": "2026-11-25T07:56:20.715Z",
-    "updatedAt": "2026-11-25T07:56:23.305Z"
+    "updatedAt": "2026-11-25T07:56:25.792Z"
   }
 }
