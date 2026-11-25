@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { DEFAULT_QUIZ_CONFIG, type QuizConfig } from "@/lib/quiz-config-shared";
-import type { QuizQuestion, StarId } from "@/lib/types";
+import type { QuizDifficulty, QuizQuestion, StarId } from "@/lib/types";
 
 const EMPTY: QuizQuestion = {
   id: "",
   star: "both",
+  difficulty: "easy",
   prompt: "",
   options: [
     { id: "a", text: "" },
@@ -22,6 +23,7 @@ const SAMPLE_JSON = `[
   {
     "id": "custom-1",
     "star": "vijay",
+    "difficulty": "easy",
     "prompt": "Your question here?",
     "options": [
       { "id": "a", "text": "Option A" },
@@ -294,6 +296,19 @@ export function AdminPanel() {
               <option value="both">Both / rivalry</option>
             </select>
           </label>
+          <label className="text-sm sm:col-span-2">
+            <span className="text-slate-400">Difficulty set</span>
+            <select
+              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2"
+              value={form.difficulty || "easy"}
+              onChange={(e) =>
+                setForm({ ...form, difficulty: e.target.value as QuizDifficulty })
+              }
+            >
+              <option value="easy">Easy</option>
+              <option value="difficult">Difficult</option>
+            </select>
+          </label>
         </div>
         <label className="block text-sm">
           <span className="text-slate-400">Prompt</span>
@@ -389,7 +404,7 @@ export function AdminPanel() {
               <div>
                 <p className="text-sm text-white">{q.prompt}</p>
                 <p className="mt-1 text-xs text-slate-400">
-                  {q.id} · {q.star} · answer {q.correctOptionId}
+                  {q.id} · {q.star} · {q.difficulty || "easy"} · answer {q.correctOptionId}
                 </p>
               </div>
               <div className="flex gap-2">

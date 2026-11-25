@@ -1,9 +1,11 @@
 import type { QuizQuestion } from "./types";
 
-export const SEED_QUESTIONS: QuizQuestion[] = [
+/** Easy bank (default fan trivia). */
+const EASY: QuizQuestion[] = [
   {
     id: "v1",
     star: "vijay",
+    difficulty: "easy",
     prompt: "Which film made Thalapathy Vijay a pan-India sensation with the anthem 'Arabic Kuthu'?",
     options: [
       { id: "a", text: "Master" },
@@ -17,6 +19,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "v2",
     star: "vijay",
+    difficulty: "easy",
     prompt: "In which movie does Vijay play a professor who becomes a vigilante?",
     options: [
       { id: "a", text: "Sarkar" },
@@ -30,6 +33,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "v3",
     star: "vijay",
+    difficulty: "easy",
     prompt: "What is Vijay's widely used fan title?",
     options: [
       { id: "a", text: "Thala" },
@@ -42,6 +46,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "v4",
     star: "vijay",
+    difficulty: "easy",
     prompt: "Which Vijay film centers on a medicine-related social theme with multiple roles?",
     options: [
       { id: "a", text: "Mersal" },
@@ -54,6 +59,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "v5",
     star: "vijay",
+    difficulty: "easy",
     prompt: "Leo (2023) was directed by which filmmaker?",
     options: [
       { id: "a", text: "Atlee" },
@@ -66,6 +72,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "a1",
     star: "ajith",
+    difficulty: "easy",
     prompt: "What is Ajith Kumar's popular fan title?",
     options: [
       { id: "a", text: "Thalapathy" },
@@ -78,6 +85,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "a2",
     star: "ajith",
+    difficulty: "easy",
     prompt: "Who directed Ajith's family drama Viswasam (2019)?",
     options: [
       { id: "a", text: "Siva" },
@@ -91,6 +99,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "a3",
     star: "ajith",
+    difficulty: "easy",
     prompt: "Ajith is also known for which non-film passion?",
     options: [
       { id: "a", text: "Cricket coaching" },
@@ -103,6 +112,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "a4",
     star: "ajith",
+    difficulty: "easy",
     prompt: "Which film features Ajith as a cop in a Gautham Vasudev Menon thriller?",
     options: [
       { id: "a", text: "Mankatha" },
@@ -115,6 +125,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "a5",
     star: "ajith",
+    difficulty: "easy",
     prompt: "Mankatha is best remembered as a film where Ajith plays a…",
     options: [
       { id: "a", text: "School teacher" },
@@ -127,6 +138,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "b1",
     star: "both",
+    difficulty: "easy",
     prompt: "Vijay vs Ajith is often called a classic rivalry of which industry?",
     options: [
       { id: "a", text: "Tollywood" },
@@ -139,6 +151,7 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
   {
     id: "b2",
     star: "both",
+    difficulty: "easy",
     prompt: "Which pair of titles is correctly matched?",
     options: [
       { id: "a", text: "Vijay = Thala, Ajith = Thalapathy" },
@@ -149,3 +162,220 @@ export const SEED_QUESTIONS: QuizQuestion[] = [
     correctOptionId: "b",
   },
 ];
+
+/** Difficult bank — combos, music directors, scenes, character shades (15). */
+const DIFFICULT: QuizQuestion[] = [
+  {
+    id: "d1",
+    star: "both",
+    difficulty: "difficult",
+    prompt:
+      "Which film pairs Thalapathy Vijay with Suriya as friends and features comedy legend Vadivelu in a major comic track?",
+    options: [
+      { id: "a", text: "Ghilli" },
+      { id: "b", text: "Friends (2001)" },
+      { id: "c", text: "Thirupaachi" },
+      { id: "d", text: "Youth" },
+    ],
+    correctOptionId: "b",
+    funFact: "Friends is a classic early-2000s buddy drama with Vijay, Suriya, and Vadivelu.",
+  },
+  {
+    id: "d2",
+    star: "vijay",
+    difficulty: "difficult",
+    prompt:
+      "In which soft romantic classic does Vijay's hero stand for pure love — often cited when fans talk about Vijay helping / living a heartfelt love story?",
+    options: [
+      { id: "a", text: "Pokkiri" },
+      { id: "b", text: "Shahjahan" },
+      { id: "c", text: "Sarkar" },
+      { id: "d", text: "Kaththi" },
+    ],
+    correctOptionId: "b",
+    funFact: "Shahjahan (2001) is remembered for its melody-heavy romance and emotional tone.",
+  },
+  {
+    id: "d3",
+    star: "vijay",
+    difficulty: "difficult",
+    prompt: "Who is the music director of Shahjahan?",
+    options: [
+      { id: "a", text: "A. R. Rahman" },
+      { id: "b", text: "Harris Jayaraj" },
+      { id: "c", text: "Mani Sharma" },
+      { id: "d", text: "Yuvan Shankar Raja" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "d4",
+    star: "vijay",
+    difficulty: "difficult",
+    prompt:
+      "Which Vijay mass film features comedian Vivek in a prominent comic supporting role beside the angry young hero arc?",
+    options: [
+      { id: "a", text: "Leo" },
+      { id: "b", text: "Sivakasi" },
+      { id: "c", text: "Master" },
+      { id: "d", text: "Beast" },
+    ],
+    correctOptionId: "b",
+    funFact: "Sivakasi (2005) mixes village mass drama with Vivek's comedy track.",
+  },
+  {
+    id: "d5",
+    star: "vijay",
+    difficulty: "difficult",
+    prompt:
+      "Which early-2000s Vijay film is also famous for Vadivelu's comedy chemistry with the romantic hero setup (apart from Friends)?",
+    options: [
+      { id: "a", text: "Priyamanavale" },
+      { id: "b", text: "Mersal" },
+      { id: "c", text: "Varisu" },
+      { id: "d", text: "Theri" },
+    ],
+    correctOptionId: "a",
+  },
+  {
+    id: "d6",
+    star: "vijay",
+    difficulty: "difficult",
+    prompt:
+      "In Master, Vijay's JD is best described as which kind of character shade?",
+    options: [
+      { id: "a", text: "Pure comic sidekick" },
+      { id: "b", text: "Grey / vigilante-leaning professor" },
+      { id: "c", text: "Full-time villain with no redeeming arc" },
+      { id: "d", text: "Silent monk" },
+    ],
+    correctOptionId: "b",
+    funFact: "JD starts as a flawed professor and turns into a street-smart vigilante force.",
+  },
+  {
+    id: "d7",
+    star: "ajith",
+    difficulty: "difficult",
+    prompt:
+      "Which film is the clearest example of Ajith playing a full grey-shaded / negative-leaning anti-hero leading a crime plot?",
+    options: [
+      { id: "a", text: "Viswasam" },
+      { id: "b", text: "Mankatha" },
+      { id: "c", text: "Veeram" },
+      { id: "d", text: "Chandramukhi" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "d8",
+    star: "ajith",
+    difficulty: "difficult",
+    prompt: "Who composed the music for Mankatha?",
+    options: [
+      { id: "a", text: "Anirudh Ravichander" },
+      { id: "b", text: "D. Imman" },
+      { id: "c", text: "Yuvan Shankar Raja" },
+      { id: "d", text: "Harris Jayaraj" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "d9",
+    star: "ajith",
+    difficulty: "difficult",
+    prompt: "Who is the music director of Viswasam?",
+    options: [
+      { id: "a", text: "A. R. Rahman" },
+      { id: "b", text: "D. Imman" },
+      { id: "c", text: "Santhosh Narayanan" },
+      { id: "d", text: "G. V. Prakash" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "d10",
+    star: "vijay",
+    difficulty: "difficult",
+    prompt: "Who composed music for both Master and Beast?",
+    options: [
+      { id: "a", text: "Vidyasagar" },
+      { id: "b", text: "Anirudh Ravichander" },
+      { id: "c", text: "Mani Sharma" },
+      { id: "d", text: "Deva" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "d11",
+    star: "vijay",
+    difficulty: "difficult",
+    prompt:
+      "In Ghilli, which sport frames the love story and the hero's mass entry energy?",
+    options: [
+      { id: "a", text: "Cricket" },
+      { id: "b", text: "Kabaddi" },
+      { id: "c", text: "Football" },
+      { id: "d", text: "Hockey" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "d12",
+    star: "vijay",
+    difficulty: "difficult",
+    prompt: "Who is the music director of Ghilli?",
+    options: [
+      { id: "a", text: "Harris Jayaraj" },
+      { id: "b", text: "Vidyasagar" },
+      { id: "c", text: "Yuvan Shankar Raja" },
+      { id: "d", text: "Ilaiyaraaja" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "d13",
+    star: "both",
+    difficulty: "difficult",
+    prompt:
+      "Have Thalapathy Vijay and Thala Ajith ever starred together as co-leads in the same film?",
+    options: [
+      { id: "a", text: "Yes — in Friends" },
+      { id: "b", text: "Yes — in Mankatha" },
+      { id: "c", text: "No — they never co-led a film together" },
+      { id: "d", text: "Yes — in a 1990s dual-hero film" },
+    ],
+    correctOptionId: "c",
+    funFact: "The rivalry is cultural and commercial — not from a shared lead cast film.",
+  },
+  {
+    id: "d14",
+    star: "ajith",
+    difficulty: "difficult",
+    prompt:
+      "In the stylish underworld remake Billa, Ajith's character is best remembered as a…",
+    options: [
+      { id: "a", text: "Village comedian" },
+      { id: "b", text: "Don / underworld kingpin figure" },
+      { id: "c", text: "School teacher" },
+      { id: "d", text: "Race mechanic only" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "d15",
+    star: "both",
+    difficulty: "difficult",
+    prompt:
+      "Combo check: which pairing is correct for music + film?",
+    options: [
+      { id: "a", text: "Kaththi — A. R. Rahman" },
+      { id: "b", text: "Kaththi — Anirudh Ravichander" },
+      { id: "c", text: "Viswasam — Anirudh Ravichander" },
+      { id: "d", text: "Mankatha — D. Imman" },
+    ],
+    correctOptionId: "b",
+    funFact: "Anirudh's Kaththi album (including Selfie Pulla / Aathi) was a huge youth rage.",
+  },
+];
+
+export const SEED_QUESTIONS: QuizQuestion[] = [...EASY, ...DIFFICULT];

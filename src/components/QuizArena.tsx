@@ -4,10 +4,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { loadGuest } from "@/lib/guest";
 import { clubLabel, loadRivalry, loadSettings, saveRivalry, SCORES_KEY } from "@/lib/settings";
 import { DEFAULT_QUIZ_CONFIG, type QuizConfig } from "@/lib/quiz-config-shared";
-import type { QuizQuestion, QuizScorePayload, RivalryStats, StarId } from "@/lib/types";
+import type {
+  QuizDifficulty,
+  QuizQuestion,
+  QuizScorePayload,
+  RivalryStats,
+  StarId,
+} from "@/lib/types";
 
 type PlayMode = "solo" | "versus";
 type Turn = "p1" | "p2" | "reveal";
+
+function questionDifficulty(q: QuizQuestion): QuizDifficulty {
+  return q.difficulty === "difficult" ? "difficult" : "easy";
+}
 
 function shuffle<T>(arr: T[]) {
   const copy = [...arr];
@@ -19,6 +29,7 @@ function shuffle<T>(arr: T[]) {
 }
 
 export function QuizArena() {
+  const [difficulty, setDifficulty] = useState<QuizDifficulty>("easy");
   const [playMode, setPlayMode] = useState<PlayMode>("solo");
   const [club, setClub] = useState<StarId>("vijay");
   const [club2, setClub2] = useState<StarId>("ajith");
@@ -66,11 +77,16 @@ export function QuizArena() {
 
   const current = round[index];
   const pool = useMemo(() => {
+    const byDiff = questions.filter((q) => questionDifficulty(q) === difficulty);
+    // Difficult set is shared combo trivia — don't shrink it by club.
+    if (difficulty === "difficult") return byDiff;
     if (playMode === "versus") {
-      return questions.filter((q) => q.star === "both" || q.star === club || q.star === club2);
+      return byDiff.filter((q) => q.star === "both" || q.star === club || q.star === club2);
     }
-    return questions.filter((q) => q.star === club || q.star === "both");
-  }, [questions, club, club2, playMode]);
+    return byDiff.filter((q) => q.star === club || q.star === "both");
+  }, [questions, club, club2, playMode, difficulty]);
+
+  const roundSize = difficulty === "difficult" ? 15 : config.questionsPerRound;
 
   function clearTimer() {
     if (timerRef.current) {
@@ -123,7 +139,7 @@ export function QuizArena() {
   }
 
   function startRound() {
-    const need = Math.max(1, config.questionsPerRound);
+    const need = Math.max(1, roundSize);
     // Fill the full round even if the bank is smaller — reshuffle and reuse.
     const pickedQs: QuizQuestion[] = [];
     if (pool.length === 0) return;
@@ -276,13 +292,43 @@ export function QuizArena() {
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-white">Fan Club Quiz</h1>
         <p className="mt-1 text-sm text-slate-300">
-          {config.questionsPerRound} questions · {config.secondsPerQuestion}s each · miss the timer =
-          0 points
+          {difficulty === "difficult" ? "Difficult" : "Easy"} · {roundSize} questions ·{" "}
+          {config.secondsPerQuestion}s each · miss the timer = 0 points
         </p>
       </div>
 
       {!round.length && !done ? (
         <>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Choose set</p>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  ["easy", "Easy", "Fan classics & titles"],
+                  ["difficult", "Difficult", "Combos · music · scenes · character shades"],
+                ] as [QuizDifficulty, string, string][]
+              ).map(([id, label, hint]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setDifficulty(id)}
+                  className={`rounded-xl px-4 py-3 text-left text-sm transition ${
+                    difficulty === id
+                      ? id === "difficult"
+                        ? "bg-[#f4c95f] text-[#2a1a00]"
+                        : "bg-teal-400 text-[#062018]"
+                      : "border border-white/10 bg-white/5 text-slate-200"
+                  }`}
+                >
+                  <span className="block font-semibold">{label}</span>
+                  <span className={`mt-0.5 block text-[11px] ${difficulty === id ? "opacity-80" : "text-slate-400"}`}>
+                    {hint}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-2">
             {(["solo", "versus"] as PlayMode[]).map((m) => (
               <button
@@ -347,19 +393,23 @@ export function QuizArena() {
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <p className="text-sm text-slate-300">
-              Bank: {pool.length} unique · this round: {config.questionsPerRound} Qs ·{" "}
-              {config.secondsPerQuestion}s timer (set in Admin)
-              {pool.length > 0 && pool.length < config.questionsPerRound
-                ? ` · repeats allowed to fill ${config.questionsPerRound}`
+              {difficulty === "difficult" ? "Difficult" : "Easy"} bank: {pool.length} unique · this
+              round: {roundSize} Qs · {config.secondsPerQuestion}s timer
+              {pool.length > 0 && pool.length < roundSize
+                ? ` · repeats allowed to fill ${roundSize}`
                 : ""}
             </p>
             <button
               type="button"
               disabled={pool.length === 0}
               onClick={startRound}
-              className="mt-4 rounded-lg bg-teal-400 px-4 py-2 text-sm font-semibold text-[#062018] disabled:opacity-40"
+              className={`mt-4 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-40 ${
+                difficulty === "difficult"
+                  ? "bg-[#f4c95f] text-[#2a1a00]"
+                  : "bg-teal-400 text-[#062018]"
+              }`}
             >
-              Start {playMode === "versus" ? "versus" : "solo"} round
+              Start {difficulty} {playMode === "versus" ? "versus" : "solo"} round
             </button>
           </div>
         </>

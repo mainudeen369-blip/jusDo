@@ -52,9 +52,13 @@ export interface QuizOption {
   text: string;
 }
 
+export type QuizDifficulty = "easy" | "difficult";
+
 export interface QuizQuestion {
   id: string;
   star: StarId | "both";
+  /** easy = current fan bank; difficult = deeper combo / scene / music trivia */
+  difficulty?: QuizDifficulty;
   prompt: string;
   options: QuizOption[];
   correctOptionId: string;
