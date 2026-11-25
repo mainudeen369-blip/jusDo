@@ -44,5 +44,25 @@
     },
     "createdAt": "2026-11-25T07:56:20.715Z",
     "updatedAt": "2026-11-25T07:56:42.736Z"
+  },
+  "E72ETH": {
+    "code": "E72ETH",
+    "hostId": "p-mwvuf1o5-f0tlg6",
+    "players": [
+      {
+        "id": "p-mwvuf1o5-f0tlg6",
+        "name": "haja"
+      }
+    ],
+    "status": "lobby",
+    "questionIds": [],
+    "questionIndex": 0,
+    "answers": {},
+    "lastResults": {},
+    "scores": {
+      "p-mwvuf1o5-f0tlg6": 0
+    },
+    "createdAt": "2026-11-25T08:09:58.744Z",
+    "updatedAt": "2026-11-25T08:09:58.745Z"
   }
 }
