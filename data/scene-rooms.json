@@ -6,6 +6,10 @@
       {
         "id": "p1",
         "name": "Alpha"
+      },
+      {
+        "id": "p2",
+        "name": "Beta"
       }
     ],
     "status": "lobby",
@@ -14,9 +18,10 @@
     "answers": {},
     "lastResults": {},
     "scores": {
-      "p1": 0
+      "p1": 0,
+      "p2": 0
     },
     "createdAt": "2026-11-25T07:56:20.715Z",
-    "updatedAt": "2026-11-25T07:56:20.715Z"
+    "updatedAt": "2026-11-25T07:56:23.305Z"
   }
 }
